@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">WiMAX Helper For Aterm</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="s1_finished">%1$sが完了しました</string>
+    <string name="s1_failed">%1$sに失敗しました</string>
+
+    <!-- for MyAsync -->
+    <string name="now_loading">読み込み中です</string>
+    
+    <!-- for Preference -->
+    <string name="pref_key_wake_up">pref_key_wake_up</string>
+    <string name="pref_key_standby">pref_key_standby</string>
+    <string name="pref_key_aterm_host_name">pref_key_aterm_host_name</string>
+    <string name="pref_key_bt_address">pref_key_bt_address</string>
+    <string name="pref_key_reboot">pref_key_reboot</string>
+</resources>

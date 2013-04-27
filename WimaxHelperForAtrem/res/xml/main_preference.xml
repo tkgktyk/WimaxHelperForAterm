@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+    <PreferenceCategory android:title="Atermコマンド" >
+        <jp.tkgktyk.wimaxhelperforaterm.YesNoPreference
+	        android:key="@string/pref_key_wake_up"
+	        android:title="リモード起動"
+	        android:summary="Atermのリモート起動を試みます"
+	        android:dialogMessage="実行しますか？" />
+        <jp.tkgktyk.wimaxhelperforaterm.YesNoPreference
+	        android:key="@string/pref_key_standby"
+	        android:title="スタンバイ"
+	        android:summary="Atermをスタンバイ状態にします"
+	        android:dialogMessage="実行しますか？" />
+        <jp.tkgktyk.wimaxhelperforaterm.YesNoPreference
+	        android:key="@string/pref_key_reboot"
+	        android:title="再起動"
+	        android:summary="Atermを再起動します"
+	        android:dialogMessage="実行しますか？" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="アプリ設定" >
+        <EditTextPreference
+	        android:key="@string/pref_key_aterm_host_name"
+	        android:title="Atermホスト名"
+	        android:summary="クイック設定Webのアドレス"
+	        android:dialogMessage="Atermホスト名"
+	        android:inputType="text" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="高度な設定" >
+        <EditTextPreference
+	        android:key="@string/pref_key_bt_address"
+	        android:title="Bluetoothアドレス"
+	        android:summary="リモート起動に使用するBluetoothのMACアドレス"
+	        android:dialogMessage="Bluetoothアドレス"
+	        android:inputType="text" />
+    </PreferenceCategory>
+
+</PreferenceScreen>
