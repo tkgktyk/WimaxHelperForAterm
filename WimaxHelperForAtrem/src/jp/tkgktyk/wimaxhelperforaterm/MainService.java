@@ -158,6 +158,6 @@ public class MainService extends Service {
 	
 	/** Notify that now waking up.　*/
 	private void _showWakeUpNotification() {
-		_showNotification("リモード起動中", 0);
+		_showNotification("リモート起動中", 0);
 	}
 }
