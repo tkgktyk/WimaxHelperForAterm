@@ -125,12 +125,19 @@ public class MainService extends Service {
 	 */
 	private void _showNotification(String content, int antenna) {
 		// if API level is greater than 11, use Notification.Builder.
+		int icon = 0;
+		if (antenna > 0)
+			icon = R.drawable.ic_stat_connected;
+		else if (antenna == 0)
+			icon = R.drawable.ic_stat_disconnected;
+		else
+			icon = R.drawable.ic_stat_unknown;
 		Notification notification = new Notification(
-				android.R.drawable.ic_menu_sort_by_size,
+				icon,
 				content,
 				System.currentTimeMillis()
 				);
-		notification.number = (antenna > 0)? antenna: 0;
+//		notification.number = (antenna > 0)? antenna: 0;
 		Intent intent = new Intent(this, MainActivity.class);
 		PendingIntent contentIntent
 		= PendingIntent.getActivity(this, 0, intent, 0);
