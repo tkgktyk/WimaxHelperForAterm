@@ -1,32 +1,33 @@
-package jp.tkgktyk.wimaxhelperforaterm;
+package jp.tkgktyk.wimaxhelperforaterm.my;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.pm.ActivityInfo;
 import android.os.AsyncTask;
 
-public class MyAsync extends AsyncTask<Object, Integer, Object> {
-	public interface Task {
-		public boolean run();
-		public void onSucceeded();
+public class MyAsyncLoader<T> extends AsyncTask<Object, Integer, T> {
+	public interface Task<T> {
+		public T run();
+		public void onSucceeded(T result);
 		public void onFailed();
+		public void onCancelled();
 	}
 
 	private final Activity _activity;
-	private final Task _task;
+	private final Task<T> _task;
 	private final ProgressDialog _dialog;
 
-	public MyAsync(Activity activity, String message, Task task) {
+	public MyAsyncLoader(Activity activity, String message, Task<T> task, boolean cancelable) {
 		MyLog.d();
 		_activity = activity;
 		_task = task;
 		_dialog = new ProgressDialog(activity);
 
 		_dialog.setMessage(message);
-		_dialog.setCancelable(false);
+		_dialog.setCancelable(cancelable);
 	}
-	public MyAsync(Activity activity, int message, Task task) {
-		this(activity, activity.getString(message), task);
+	public MyAsyncLoader(Activity activity, int message, Task<T> task, boolean cancelable) {
+		this(activity, activity.getString(message), task, cancelable);
 	}
 
 	@Override
@@ -37,30 +38,33 @@ public class MyAsync extends AsyncTask<Object, Integer, Object> {
 		_dialog.show();
 	}
 	@Override
-	protected Object doInBackground(Object... args) {
+	protected T doInBackground(Object... args) {
 		MyLog.d();
 
-		if (!_task.run()) {
-			// on failed
+		if (this.isCancelled()) {
+			// on canceled
 			this.cancel(true);
 			return null;
 		}
-		return null;
+		return _task.run();
 	}
 	@Override
-	protected void onPostExecute(Object result) {
+	protected void onPostExecute(T result) {
 		MyLog.d();
 		if (this.isCancelled()) {
 			this.onCancelled();
 			return;
 		}
-		_task.onSucceeded();
+		if (result != null)
+			_task.onSucceeded(result);
+		else
+			_task.onFailed();
 		_onFinished();
 	}
 	@Override
 	protected void onCancelled() {
 		MyLog.d();
-		_task.onFailed();
+		_task.onCancelled();
 		_onFinished();
 	}
 	

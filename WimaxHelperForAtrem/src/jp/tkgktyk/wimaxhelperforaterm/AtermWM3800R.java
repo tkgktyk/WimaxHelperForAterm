@@ -1,7 +1,9 @@
 package jp.tkgktyk.wimaxhelperforaterm;
 
 import jp.tkgktyk.wimaxhelperforaterm.AtermHelper.Info;
+import jp.tkgktyk.wimaxhelperforaterm.AtermHelper.Product;
 import jp.tkgktyk.wimaxhelperforaterm.AtermHelper.Router;
+import jp.tkgktyk.wimaxhelperforaterm.my.MyLog;
 
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -9,8 +11,16 @@ import org.jsoup.select.Elements;
 
 import android.content.Context;
 
+/**
+ * A Router class for Aterm WM3800R.
+ */
 public class AtermWM3800R implements Router {
 	
+	/**
+	 * To use String in switch statement during parse document. Document has a
+	 * information table that have two column, 'key' and 'value'. This enum
+	 * corresponds to key column.
+	 */
 	public enum Key {
 		FIRMWARE_VERSION("ファームウェアバージョン"),
 		FIRMWARE_UPDATE("ファームウェア更新通知"),
@@ -127,4 +137,7 @@ public class AtermWM3800R implements Router {
 	public String getRebootCommand() {
 		return Const.ATERM_CMD_REBOOT;
 	}
+
+	@Override
+	public Product toProduct() { return Product.WM3800R; }
 }

@@ -2,8 +2,6 @@ package jp.tkgktyk.wimaxhelperforaterm;
 
 import java.util.UUID;
 
-import android.net.Uri;
-
 public class Const {
 	public static final String ATERM_BASIC_USERNAME = "smart-user";
 	public static final String ATERM_BASIC_PASSWORD = "smart-user";

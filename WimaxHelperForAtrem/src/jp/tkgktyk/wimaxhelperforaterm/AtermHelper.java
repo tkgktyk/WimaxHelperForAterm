@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Locale;
 
+import jp.tkgktyk.wimaxhelperforaterm.my.MyLog;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -35,6 +37,11 @@ import android.net.Uri;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 
+/**
+ * A helper class to access to Aterm router.
+ * This saves Aterm's host name and product name to DefaultSharedPreferences.
+ * A bluetooth MAC address is saved to it too by internal Info class.
+ */
 public class AtermHelper {
     // Default connection and socket timeout of 60 seconds.  Tweak to taste.
     private static final int SOCKET_OPERATION_TIMEOUT = 60 * 1000;
@@ -44,6 +51,10 @@ public class AtermHelper {
 	private static String KEY_HOST_NAME = "";
 	private static String KEY_PRODUCT = "KEY_PRODUCT";
 	
+	/**
+	 * An interface(not java's interface) to access to Aterm's information.
+	 * This class uses default shared preferences to save some information.
+	 */
 	public static class Info implements Serializable {
 		private Context _context;
 		public String version = "";
@@ -59,23 +70,48 @@ public class AtermHelper {
 		public int antenna;
 		public String ipAddress = "";
 		
+		/**
+		 * Load preferences. Default parameters of member is set in define statement.
+		 * @param context
+		 */
 		public Info(Context context) {
 			_context = context;
 			SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(_context);
 			_btAddress = pref.getString(KEY_BT_ADDRESS, "");
 		}
 		
+		/**
+		 * Make a text that represents the rest of battery.
+		 * @return
+		 * "%d%%" format. '+' is added when the battery is charging.
+		 */
 		public String getBatteryText() {
 			String text = String.format("%d%%", _battery);
 			return charging? text + "+": text;
 		}
+		
+		/**
+		 * Setter of battery.
+		 * @param battery
+		 */
 		public void setBattery(int battery) {
 			_battery = battery;
 		}
 		
+		/**
+		 * Getter of Bluetooth MAC address.
+		 * @return
+		 * Bluetooth MAC address.
+		 */
 		public String getBtAddress() {
 			return _btAddress;
 		}
+		
+		/**
+		 * Setter of Bluetooth MAC address.
+		 * @param address
+		 * Set MAC address.
+		 */
 		public void setBtAddress(String address) {
 			String newAddress = address.toUpperCase(Locale.US);
 			if (!_btAddress.equals(newAddress)) {
@@ -86,12 +122,42 @@ public class AtermHelper {
 		}
 	}
 
+	/**
+	 * An interface to talk with WiMAX router.
+	 * 
+	 */
 	public interface Router {
+		/**
+		 * Parse router information page(HTML) with {@link Document}.
+		 * @param doc
+		 * Document of Jsoup liked to router's information.
+		 * @param context
+		 * Need to access default shared preferences.
+		 * @return
+		 * a new information. Null is returned only when it fails.
+		 */
 		public Info parseDocument(Document doc, Context context);
+		/**
+		 * @return
+		 * Router's standby command.
+		 */
 		public String getStandbyCommand();
+		/**
+		 * @return
+		 * Router's reboot command.
+		 */
 		public String getRebootCommand();
+		/**
+		 * @return
+		 * Translate to Product enum represents this router's product name.
+		 */
+		public Product toProduct();
 	}
 	
+	/**
+	 * An extra class of Router.
+	 * This represents that this application is unsupported the router.
+	 */
 	protected class AtermUnsupported implements Router {
 		@Override
 		public Info parseDocument(Document doc, Context context) {
@@ -110,11 +176,17 @@ public class AtermHelper {
 			// return empty
 			return "";
 		}
+
+		@Override
+		public Product toProduct() { return Product.UNSUPPORTED; }
 	}
 	
+	/**
+	 * To use String in switch statement.
+	 */
 	public enum Product {
 		WM3800R("A t e r m@W M 3 8 0 0 R"),
-		NONE("");
+		UNSUPPORTED("");
 
 	    private final String _name;
 
@@ -132,7 +204,7 @@ public class AtermHelper {
 	            if (product.toString().equals(name))
 	            	return product;
 	        }
-	        return NONE;
+	        return UNSUPPORTED;
 	    }
 
 	}
@@ -150,8 +222,8 @@ public class AtermHelper {
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(_context);
 		_setRouter(pref.getString(KEY_PRODUCT, ""));
 		
-		// initialize host name
-		if (_getHostname().length() == 0) {
+		// set default host name
+		if (_getHostName().length() == 0) {
 			pref = PreferenceManager.getDefaultSharedPreferences(_context);
 			pref.edit()
 			.putString(KEY_HOST_NAME, Const.ATERM_DEFAULT_HOST_NAME)
@@ -159,13 +231,36 @@ public class AtermHelper {
 		}
 	}
 	
-	private String _getHostname() {
+	/**
+	 * Getter of host name. Get from DefaultSharedPreferences.
+	 * @return
+	 * Router's host name.
+	 */
+	private String _getHostName() {
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(_context);
 		return pref.getString(KEY_HOST_NAME, "");
 	}
 	
+	/**
+	 * Setter of router class.
+	 * @param product
+	 * Select router by this.
+	 */
 	private void _setRouter(String product) {
-		switch (Product.toProduct(product)) {
+		Product p = Product.toProduct(product);
+		if (_router != null && _router.toProduct() == p) {
+			// always set same router.
+			return;
+		}
+		if (p != Product.UNSUPPORTED) {
+			// save product to DefaultSharedPreferences
+			SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(_context);
+			pref.edit()
+			.putString(KEY_PRODUCT, product)
+			.commit();
+		}
+		// select Router
+		switch (p) {
 		case WM3800R:
 			_router = new AtermWM3800R();
 			break;
@@ -178,8 +273,8 @@ public class AtermHelper {
 
 	/**
 	 * update an Aterm information with HTTP. (executing on AsyncTask is recommended.)
-	 * if connecting to router is succeeded, a new object 'Info' is stored router's information.
-	 * when any errors are occurred, information is not update.
+	 * if connecting to router is succeeded, a new object 'Info' is stored a router's information.
+	 * If any error occurred, information is not update.
 	 * e.g. HTTP connection error, information parsing error and so on.
 	 */
 	public void updateInfoAsync() {
@@ -195,19 +290,13 @@ public class AtermHelper {
 					Info info = null;
 					switch (response.getStatusLine().getStatusCode()) {
 					case HttpStatus.SC_OK:
-						try {
+						try { // get connection and parse document.
 							HttpEntity entity = response.getEntity();
 							// Jsoup.parse closes InputStream after parsing
 							Document doc = Jsoup.parse(entity.getContent(), "euc-jp", "http://aterm.me/index.cgi");
 							MyLog.d(doc.title());
 							String product = doc.select(".product span").text();
 							MyLog.d(product);
-							if (product != null && product.length() > 0) {
-								SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(_context);
-								pref.edit()
-								.putString(KEY_PRODUCT, product)
-								.commit();
-							}
 							_setRouter(product);
 							info = _router.parseDocument(doc, _context);
 						} catch (IOException e) {
@@ -235,18 +324,22 @@ public class AtermHelper {
 		}
 	}
 	
-	public void updateInfo(final Context context) {
+	/**
+	 * Start update information thread implemented by {@link #updateInfoAsync()}.
+	 */
+	public void updateInfo() {
 		(new Thread(new Runnable() {
 			@Override
 			public void run() {
 				updateInfoAsync();
 				Intent broadcast = new Intent();
 				broadcast.setAction(ACTION_GET_INFO);
-				context.sendBroadcast(broadcast);
+				_context.sendBroadcast(broadcast);
 			}
 		})).start();
 	}
 	
+	/** Getter of Info */
 	public Info getInfo() { return _info; }
 
 	protected DefaultHttpClient _newClient() {
@@ -273,12 +366,17 @@ public class AtermHelper {
 				Const.ATERM_BASIC_USERNAME,
 				Const.ATERM_BASIC_PASSWORD
 				);
-		AuthScope scope = new AuthScope(_getHostname(), Const.ATERM_PORT);
+		AuthScope scope = new AuthScope(_getHostName(), Const.ATERM_PORT);
 		client.getCredentialsProvider().setCredentials(scope, credentials);
 		
 		return client;
 	}
 	
+	/**
+	 * Start wake up service implemented by {@link WakeUpService}
+	 * @return
+	 * if return false, bluetooth address is invalid. otherwise return true.
+	 */
 	public boolean wakeUp() {
 		String address = _info.getBtAddress();
 		if (!BluetoothAdapter.checkBluetoothAddress(address)) {
@@ -292,6 +390,10 @@ public class AtermHelper {
 		return true;
 	}
 	
+	/**
+	 * A class for waking up Aterm with bluetooth.
+	 *
+	 */
 	public static class WakeUpService extends Service {
 		
 		private BluetoothHelper _bt;
@@ -303,6 +405,9 @@ public class AtermHelper {
 			return null;
 		}
 		
+		/**
+		 * A broadcast receiver to catch bluetooth enable event for trigger starting wake up sequence.
+		 */
 		private final BroadcastReceiver _receiver = new BroadcastReceiver() {
 			@Override
 			public void onReceive(Context context, Intent intent) {
@@ -321,6 +426,7 @@ public class AtermHelper {
 				}
 			}
 		};
+		
 		@Override
 		public void onCreate() {
 			super.onCreate();
@@ -344,6 +450,7 @@ public class AtermHelper {
 		@Override
 		public int onStartCommand(Intent intent, int flags, int startId) {
 			_address = intent.getStringExtra(KEY_BT_ADDRESS);
+			// if bluetooth is not enable, enable it and wait for BluetoothAdapter.STATE_ON.
 			if (!_bt.isEnabled()) {
 				(new Thread(new Runnable() {
 					@Override
@@ -356,6 +463,9 @@ public class AtermHelper {
 			return Service.START_STICKY;
 		}
 		
+		/**
+		 * Start wake up thread and stop service.
+		 */
 		private void _wakeUp() {
 			(new Thread(new Runnable() {
 				@Override
@@ -375,31 +485,46 @@ public class AtermHelper {
 		}
 	}
 	
-	public boolean hasConnection(Context context) {
+	/**
+	 * Check the WiFi connection is active.
+	 * @return
+	 * return true when already connected or now connecting.
+	 */
+	public boolean hasConnection() {
 		ConnectivityManager cm
-		= (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+		= (ConnectivityManager)_context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo info = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 		return info.isConnectedOrConnecting();
 	}
 	
+	/**
+	 * Make URI string of Aterm command.
+	 * @param cmd
+	 * Specify Aterm's command name. Usually it is a last path segment of full command URI.
+	 * @return
+	 * command URI string.
+	 */
 	private String _makeCommand(String cmd) {
 		return new Uri.Builder()
 		.scheme("http")
-		.authority(_getHostname())
+		.authority(_getHostName())
 		.path("index.cgi")
 		.appendPath(cmd)
 		.build()
 		.toString();
 	}
 	
+	/**
+	 * Execute Aterm command.
+	 * @param cmd
+	 * Specify Aterm's command name. Usually it is a last path segment of full command URI.
+	 */
 	private void _command(String cmd) {
 		DefaultHttpClient httpClient = _newClient();
-		// access to Aterm information page
 		try {
 			HttpGet request = new HttpGet(_makeCommand(cmd));
-			// just access, router becomes to standby.
+			// just access, router executes command.
 			httpClient.execute(request);
-
 		} catch (IOException e) {
 			MyLog.e(e.toString());
 		} finally {
@@ -407,10 +532,12 @@ public class AtermHelper {
 		}
 	}
 
+	/** execute standby command */
 	public void standby() {
 		_command(_router.getStandbyCommand());
 	}
-	
+
+	/** execute reboot command */
 	public void reboot() {
 		_command(_router.getRebootCommand());
 	}

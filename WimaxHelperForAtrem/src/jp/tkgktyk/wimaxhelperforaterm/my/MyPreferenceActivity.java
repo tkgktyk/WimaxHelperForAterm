@@ -1,4 +1,4 @@
-package jp.tkgktyk.wimaxhelperforaterm;
+package jp.tkgktyk.wimaxhelperforaterm.my;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;

@@ -2,13 +2,19 @@ package jp.tkgktyk.wimaxhelperforaterm;
 
 import java.io.IOException;
 
+import jp.tkgktyk.wimaxhelperforaterm.my.MyLog;
+
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 
+/**
+ * A helper class for Bluetooth.
+ */
 public class BluetoothHelper {
 
 	private final BluetoothAdapter _adapter;
+	/** Does this class need to control enable of bluetooth? */
 	private boolean _needsEnableControl;
 	private BluetoothSocket _socket;
 	
@@ -18,6 +24,9 @@ public class BluetoothHelper {
 		_socket = null;
 	}
 	
+	/**
+	 * Enable bluetooth if need.
+	 */
 	public void enable() {
 		if (!isEnabled()) {
 			MyLog.i("enable Bluetooth.");
@@ -26,6 +35,9 @@ public class BluetoothHelper {
 		}
 	}
 	
+	/**
+	 * Disable bluetooth if need.
+	 */
 	public void disable() {
 		if (isEnabled()) {
 			MyLog.i("disable Bluetooth.");
@@ -33,6 +45,13 @@ public class BluetoothHelper {
 		}
 	}
 	
+	/**
+	 * Try to connect to bluetooth specified address.
+	 * @param address
+	 * Specify bluetooth MAC address.
+	 * @param timeout
+	 * When passes timeout[msec] from start of a trial to connect, force stop the trial.
+	 */
 	public void connect(String address, final long timeout) {
 		if (!BluetoothAdapter.checkBluetoothAddress(address)) {
 			MyLog.e("invalid bluetooth address: " + address);
@@ -74,9 +93,21 @@ public class BluetoothHelper {
 		}
 	}
 
+	/**
+	 * @return
+	 * Return true if bluetooth is enabled.
+	 */
 	public boolean isEnabled() { return _adapter.isEnabled(); }
-	
+
+	/**
+	 * @return
+	 * Return true if Android has bluetooth devices.
+	 */
 	public boolean hasDevice() { return (_adapter != null); }
 	
+	/**
+	 * @return
+	 * Return true if BluetoothHelper needs to control of bluetooth enable.
+	 */
 	public boolean needsEnableControl() { return _needsEnableControl; }
 }
