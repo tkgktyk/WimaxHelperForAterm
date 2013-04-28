@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Locale;
 
+import jp.tkgktyk.wimaxhelperforaterm.my.MyFunc;
 import jp.tkgktyk.wimaxhelperforaterm.my.MyLog;
 
 import org.apache.http.HttpEntity;
@@ -381,6 +382,7 @@ public class AtermHelper {
 		String address = _info.getBtAddress();
 		if (!BluetoothAdapter.checkBluetoothAddress(address)) {
 			MyLog.w("invalid bluetooth address: " + address);
+			MyFunc.showToast(_context, "Bluetoothアドレスが不正です： " + address);
 			return false;
 		}
 		Intent intent = new Intent(_context, WakeUpService.class);
