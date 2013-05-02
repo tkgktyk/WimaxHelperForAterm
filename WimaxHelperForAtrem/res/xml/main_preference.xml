@@ -24,14 +24,28 @@
 	        android:summary="クイック設定Webのアドレス"
 	        android:dialogMessage="Atermホスト名"
 	        android:inputType="text" />
+        <EditTextPreference
+	        android:key="@string/pref_key_screen_on_wait"
+	        android:title="ウェイト時間"
+	        android:summary="画面ON後のウェイト"
+	        android:dialogMessage="ウェイト時間[msec]"
+	        android:defaultValue="0"
+	        android:inputType="number"/>
     </PreferenceCategory>
     <PreferenceCategory android:title="高度な設定" >
         <EditTextPreference
 	        android:key="@string/pref_key_bt_address"
 	        android:title="Bluetoothアドレス"
-	        android:summary="リモート起動に使用するBluetoothのMACアドレス"
+	        android:summary="ルーターのBluetoothのMACアドレス"
 	        android:dialogMessage="Bluetoothアドレス"
 	        android:inputType="text" />
+        <EditTextPreference
+	        android:key="@string/pref_key_bt_connect_timeout"
+	        android:title="タイムアウト"
+	        android:summary="リモート起動のタイムアウト時間"
+	        android:dialogMessage="タイムアウト[msec]"
+	        android:defaultValue="1000"
+	        android:inputType="number"/>
     </PreferenceCategory>
 
 </PreferenceScreen>

@@ -1,7 +1,10 @@
 package jp.tkgktyk.wimaxhelperforaterm.my;
 
+import jp.tkgktyk.wimaxhelperforaterm.Const;
 import jp.tkgktyk.wimaxhelperforaterm.R;
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -37,5 +40,25 @@ public class MyFunc {
 		String tag = Thread.currentThread().getStackTrace()[3].getMethodName();
 		Log.e(tag, e.toString());
 		MyFunc.showLongToast(context, "Runtime Error: function is failed");
-	} 
+	}
+	public static String getStringPreference(Context context, int keyId) {
+		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+		return pref.getString(context.getString(keyId), "");
+	}
+	public static void setStringPreference(Context context, int keyId, String value) {
+		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+		pref.edit()
+		.putString(context.getString(keyId), value)
+		.commit();
+	}
+	public static Long getLongPreference(Context context, int keyId) {
+		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+		return Long.parseLong(pref.getString(context.getString(keyId), "0"));
+	}
+	public static void setLongPreference(Context context, int keyId, long value) {
+		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+		pref.edit()
+		.putString(context.getString(keyId), String.valueOf(value))
+		.commit();
+	}
 }

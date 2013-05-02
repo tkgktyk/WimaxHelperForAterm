@@ -1,5 +1,6 @@
 package jp.tkgktyk.wimaxhelperforaterm;
 
+import jp.tkgktyk.wimaxhelperforaterm.my.MyFunc;
 import jp.tkgktyk.wimaxhelperforaterm.my.MyLog;
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -44,16 +45,31 @@ public class MainService extends Service {
 			if (action.equals(AtermHelper.ACTION_GET_INFO)) {
 				_showNotification();
 			} else if (action.equals(Intent.ACTION_SCREEN_ON)) {
-				if (!_aterm.hasConnection()) {
-					MyLog.i("wake up when screen on.");
-					_showWakeUpNotification();
-					_aterm.wakeUp();
-				} else {
-					_aterm.updateInfo();
-				}
+				// After a wait, check the WiFi connection by thread.
+				(new Thread(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							Thread.sleep(
+									MyFunc.getLongPreference(
+											MainService.this,
+											R.string.pref_key_screen_on_wait
+											));
+							if (!_aterm.hasConnection()) {
+								MyLog.i("wake up when screen on.");
+								_showWakeUpNotification();
+								_aterm.wakeUp();
+							} else {
+								_aterm.updateInfo();
+							}
+						} catch (InterruptedException e) {
+							MyLog.e(e.toString());
+						}
+					}
+				})).start();
 			} else if (action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
 				// wifi event only
-				NetworkInfo info	= intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
+				NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
 				switch (info.getState()) {
 				case CONNECTED:
 					MyLog.i("wifi is connected.");

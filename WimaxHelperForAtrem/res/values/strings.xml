@@ -11,9 +11,14 @@
     <string name="now_loading">読み込み中です</string>
     
     <!-- for Preference -->
+    <!-- commands -->
     <string name="pref_key_wake_up">pref_key_wake_up</string>
     <string name="pref_key_standby">pref_key_standby</string>
-    <string name="pref_key_aterm_host_name">pref_key_aterm_host_name</string>
-    <string name="pref_key_bt_address">pref_key_bt_address</string>
     <string name="pref_key_reboot">pref_key_reboot</string>
+    <!-- value -->
+    <string name="pref_key_aterm_host_name">pref_key_aterm_host_name</string>
+    <string name="pref_key_aterm_product">pref_key_aterm_product</string>
+    <string name="pref_key_bt_address">pref_key_bt_address</string>
+    <string name="pref_key_screen_on_wait">pref_key_screen_on_wait</string>
+    <string name="pref_key_bt_connect_timeout">pref_key_bt_connect_timeout</string>
 </resources>

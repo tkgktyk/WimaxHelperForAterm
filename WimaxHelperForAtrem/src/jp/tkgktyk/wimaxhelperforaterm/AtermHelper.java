@@ -41,7 +41,7 @@ import android.preference.PreferenceManager;
 /**
  * A helper class to access to Aterm router.
  * This saves Aterm's host name and product name to DefaultSharedPreferences.
- * A bluetooth MAC address is saved to it too by internal Info class.
+ * A bluetooth MAC address is also saved to it by internal Info class.
  */
 public class AtermHelper {
     // Default connection and socket timeout of 60 seconds.  Tweak to taste.
@@ -49,8 +49,6 @@ public class AtermHelper {
 
     public static final String ACTION_GET_INFO = "ACTION_GET_INFO";
 	private static String KEY_BT_ADDRESS = "";
-	private static String KEY_HOST_NAME = "";
-	private static String KEY_PRODUCT = "KEY_PRODUCT";
 	
 	/**
 	 * An interface(not java's interface) to access to Aterm's information.
@@ -77,8 +75,7 @@ public class AtermHelper {
 		 */
 		public Info(Context context) {
 			_context = context;
-			SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(_context);
-			_btAddress = pref.getString(KEY_BT_ADDRESS, "");
+			_btAddress = MyFunc.getStringPreference(_context, R.string.pref_key_bt_address);
 		}
 		
 		/**
@@ -116,8 +113,7 @@ public class AtermHelper {
 		public void setBtAddress(String address) {
 			String newAddress = address.toUpperCase(Locale.US);
 			if (!_btAddress.equals(newAddress)) {
-				SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(_context);
-				pref.edit().putString(KEY_BT_ADDRESS, newAddress).commit();
+				MyFunc.setStringPreference(_context, R.string.pref_key_bt_address, newAddress);
 				_btAddress = newAddress;
 			}
 		}
@@ -216,19 +212,18 @@ public class AtermHelper {
 	
 	public AtermHelper(Context context) {
 		KEY_BT_ADDRESS = context.getString(R.string.pref_key_bt_address);
-		KEY_HOST_NAME = context.getString(R.string.pref_key_aterm_host_name);
 		_context = context;
 		_info = new Info(context);
 		
-		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(_context);
-		_setRouter(pref.getString(KEY_PRODUCT, ""));
+		_setRouter(MyFunc.getStringPreference(_context, R.string.pref_key_aterm_product));
 		
 		// set default host name
 		if (_getHostName().length() == 0) {
-			pref = PreferenceManager.getDefaultSharedPreferences(_context);
-			pref.edit()
-			.putString(KEY_HOST_NAME, Const.ATERM_DEFAULT_HOST_NAME)
-			.commit();
+			MyFunc.setStringPreference(
+					_context,
+					R.string.pref_key_aterm_host_name,
+					Const.ATERM_DEFAULT_HOST_NAME
+					);
 		}
 	}
 	
@@ -238,8 +233,7 @@ public class AtermHelper {
 	 * Router's host name.
 	 */
 	private String _getHostName() {
-		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(_context);
-		return pref.getString(KEY_HOST_NAME, "");
+		return MyFunc.getStringPreference(_context, R.string.pref_key_aterm_host_name);
 	}
 	
 	/**
@@ -255,10 +249,7 @@ public class AtermHelper {
 		}
 		if (p != Product.UNSUPPORTED) {
 			// save product to DefaultSharedPreferences
-			SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(_context);
-			pref.edit()
-			.putString(KEY_PRODUCT, product)
-			.commit();
+			MyFunc.setStringPreference(_context, R.string.pref_key_aterm_product, product);
 		}
 		// select Router
 		switch (p) {
@@ -475,7 +466,13 @@ public class AtermHelper {
 					MyLog.i("does wake up.");
 					
 					// wake up Aterm
-					_bt.connect(_address, 1000);
+					_bt.connect(
+							_address,
+							MyFunc.getLongPreference(
+									WakeUpService.this,
+									R.string.pref_key_bt_connect_timeout
+									)
+							);
 					
 					// after treatment
 					if (_bt.needsEnableControl())
