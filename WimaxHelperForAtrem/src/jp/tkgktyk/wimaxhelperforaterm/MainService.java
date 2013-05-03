@@ -1,5 +1,6 @@
 package jp.tkgktyk.wimaxhelperforaterm;
 
+import jp.tkgktyk.wimaxhelperforaterm.my.MyApplication;
 import jp.tkgktyk.wimaxhelperforaterm.my.MyFunc;
 import jp.tkgktyk.wimaxhelperforaterm.my.MyLog;
 import android.app.Notification;
@@ -127,7 +128,7 @@ public class MainService extends Service {
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		_aterm = new AtermHelper(this);
+		_aterm = ((MyApplication)this.getApplication()).getAterm();
 		
 		return Service.START_STICKY;
 	}

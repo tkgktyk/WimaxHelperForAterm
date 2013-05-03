@@ -1,6 +1,7 @@
 package jp.tkgktyk.wimaxhelperforaterm;
 
 import jp.tkgktyk.wimaxhelperforaterm.YesNoPreference.OnYesClickedListner;
+import jp.tkgktyk.wimaxhelperforaterm.my.MyApplication;
 import jp.tkgktyk.wimaxhelperforaterm.my.MyFunc;
 import jp.tkgktyk.wimaxhelperforaterm.my.MyLog;
 import jp.tkgktyk.wimaxhelperforaterm.my.MyPreferenceActivity;
@@ -28,7 +29,7 @@ public class MainActivity extends MyPreferenceActivity {
 		this.startService(new Intent(this, MainService.class));
 		
 		// to access to aterm
-		_aterm = new AtermHelper(this);
+		_aterm = ((MyApplication)this.getApplication()).getAterm();
 		
 		// set commands
 		_setCommand(R.string.pref_key_stop_service, new OnYesClickedListner() {
