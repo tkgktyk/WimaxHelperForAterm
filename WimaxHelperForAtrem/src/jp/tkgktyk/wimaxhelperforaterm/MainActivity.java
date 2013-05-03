@@ -7,6 +7,7 @@ import jp.tkgktyk.wimaxhelperforaterm.my.MyPreferenceActivity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.Preference;
+import android.preference.PreferenceScreen;
 import android.view.Menu;
 
 /**
@@ -30,6 +31,12 @@ public class MainActivity extends MyPreferenceActivity {
 		_aterm = new AtermHelper(this);
 		
 		// set commands
+		_setCommand(R.string.pref_key_stop_service, new OnYesClickedListner() {
+			@Override
+			public void onYesClicked(Preference preference) {
+				stopService(new Intent(MainActivity.this, MainService.class));
+			}
+		});
 		_setCommand(R.string.pref_key_wake_up, new OnYesClickedListner() {
 			@Override
 			public void onYesClicked(Preference preference) {
@@ -76,4 +83,18 @@ public class MainActivity extends MyPreferenceActivity {
 		return true;
 	}
 
+	/**
+	 * A workaround in https://code.google.com/p/android/issues/detail?id=4611.
+	 * When use nested preferenceScreen, the child preferenceScreen is not applied application theme.
+	 */
+	@Override
+	public boolean onPreferenceTreeClick(PreferenceScreen preferenceScreen, Preference preference)
+	{
+		super.onPreferenceTreeClick(preferenceScreen, preference);
+		if (preference!=null)
+			if (preference instanceof PreferenceScreen)
+				if (((PreferenceScreen)preference).getDialog()!=null)
+					((PreferenceScreen)preference).getDialog().getWindow().getDecorView().setBackgroundDrawable(this.getWindow().getDecorView().getBackground().getConstantState().newDrawable());
+		return false;
+	}
 }

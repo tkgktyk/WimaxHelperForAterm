@@ -1,6 +1,5 @@
 package jp.tkgktyk.wimaxhelperforaterm.my;
 
-import jp.tkgktyk.wimaxhelperforaterm.Const;
 import jp.tkgktyk.wimaxhelperforaterm.R;
 import android.content.Context;
 import android.content.SharedPreferences;

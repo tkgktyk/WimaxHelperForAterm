@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
-    <PreferenceCategory android:title="Atermコマンド" >
+    <PreferenceCategory android:title="コマンド" >
+        <jp.tkgktyk.wimaxhelperforaterm.YesNoPreference
+	        android:key="@string/pref_key_stop_service"
+	        android:title="サービス停止"
+	        android:summary="W.H.A.のサービスを停止します"
+	        android:dialogMessage="実行しますか？" />
         <jp.tkgktyk.wimaxhelperforaterm.YesNoPreference
 	        android:key="@string/pref_key_wake_up"
 	        android:title="リモード起動"
@@ -17,35 +22,44 @@
 	        android:summary="Atermを再起動します"
 	        android:dialogMessage="実行しますか？" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="アプリ設定" >
-        <EditTextPreference
-	        android:key="@string/pref_key_aterm_host_name"
-	        android:title="Atermホスト名"
-	        android:summary="クイック設定Webのアドレス"
-	        android:dialogMessage="Atermホスト名"
-	        android:inputType="text" />
-        <EditTextPreference
-	        android:key="@string/pref_key_screen_on_wait"
-	        android:title="ウェイト時間"
-	        android:summary="画面ON後のウェイト"
-	        android:dialogMessage="ウェイト時間[msec]"
-	        android:defaultValue="0"
-	        android:inputType="number"/>
-    </PreferenceCategory>
-    <PreferenceCategory android:title="高度な設定" >
-        <EditTextPreference
-	        android:key="@string/pref_key_bt_address"
-	        android:title="Bluetoothアドレス"
-	        android:summary="ルーターのBluetoothのMACアドレス"
-	        android:dialogMessage="Bluetoothアドレス"
-	        android:inputType="text" />
-        <EditTextPreference
-	        android:key="@string/pref_key_bt_connect_timeout"
-	        android:title="タイムアウト"
-	        android:summary="リモート起動のタイムアウト時間"
-	        android:dialogMessage="タイムアウト[msec]"
-	        android:defaultValue="1000"
-	        android:inputType="number"/>
+    <PreferenceCategory android:title="設定" >
+        
+    	<PreferenceScreen android:title="アプリの設定" >
+    	    <PreferenceCategory android:title="全般" >
+    	        <EditTextPreference
+    	            android:dialogMessage="Atermホスト名"
+    	            android:inputType="text"
+    	            android:key="@string/pref_key_aterm_host_name"
+    	            android:summary="クイック設定Webのアドレス"
+    	            android:title="Atermホスト名" />
+    	        <EditTextPreference
+    	            android:defaultValue="0"
+    	            android:dialogMessage="ウェイト時間[msec]"
+    	            android:inputType="number"
+    	            android:key="@string/pref_key_screen_on_wait"
+    	            android:summary="画面ON後のウェイト"
+    	            android:title="ウェイト時間" />
+    	    </PreferenceCategory>
+    	</PreferenceScreen>
+    	
+    	<PreferenceScreen android:title="高度な設定" >
+    	    <PreferenceCategory android:title="リモート起動" >
+    	        <EditTextPreference
+    	            android:dialogMessage="Bluetoothアドレス"
+    	            android:inputType="text"
+    	            android:key="@string/pref_key_bt_address"
+    	            android:summary="ルーターのBluetoothのMACアドレス"
+    	            android:title="Bluetoothアドレス" />
+    	        <EditTextPreference
+    	            android:defaultValue="1000"
+    	            android:dialogMessage="タイムアウト[msec]"
+    	            android:inputType="number"
+    	            android:key="@string/pref_key_bt_connect_timeout"
+    	            android:summary="リモート起動のタイムアウト時間"
+    	            android:title="タイムアウト" />
+    	    </PreferenceCategory>
+    	</PreferenceScreen>
+    	
     </PreferenceCategory>
 
 </PreferenceScreen>
