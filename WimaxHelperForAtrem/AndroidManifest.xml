@@ -11,14 +11,14 @@
     <uses-permission android:name="android.permission.BLUETOOTH"/>
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-feature android:name="android.hardware.bluetooth"/>
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-
+    
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" android:debuggable="true" android:name=".my.MyApplication">
+        android:theme="@style/AppTheme" android:debuggable="false" android:name=".my.MyApplication">
         <activity
             android:name="jp.tkgktyk.wimaxhelperforaterm.MainActivity"
             android:label="@string/app_name"
