@@ -1,5 +1,8 @@
 package jp.tkgktyk.wimaxhelperforaterm;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
 import jp.tkgktyk.wimaxhelperforaterm.my.MyApplication;
 import jp.tkgktyk.wimaxhelperforaterm.my.MyFunc;
 import jp.tkgktyk.wimaxhelperforaterm.my.MyLog;
@@ -46,28 +49,7 @@ public class MainService extends Service {
 			if (action.equals(AtermHelper.ACTION_GET_INFO)) {
 				_showNotification();
 			} else if (action.equals(Intent.ACTION_SCREEN_ON)) {
-				// After a wait, check the WiFi connection by thread.
-				(new Thread(new Runnable() {
-					@Override
-					public void run() {
-						try {
-							Thread.sleep(
-									MyFunc.getLongPreference(
-											MainService.this,
-											R.string.pref_key_screen_on_wait
-											));
-							if (!_aterm.hasConnection()) {
-								MyLog.i("wake up when screen on.");
-								_showWakeUpNotification();
-								_aterm.wakeUp();
-							} else {
-								_aterm.updateInfo();
-							}
-						} catch (InterruptedException e) {
-							MyLog.e(e.toString());
-						}
-					}
-				})).start();
+				_wakeUp();
 			} else if (action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
 				// wifi event only
 				NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
@@ -183,5 +165,31 @@ public class MainService extends Service {
 	/** Notify that now waking up.　*/
 	private void _showWakeUpNotification() {
 		_showNotification("リモート起動中", 0);
+	}
+	
+	/**
+	 * After a wait that is specified Preference, check the WiFi connection.
+	 * if WiFi connection is invalid, try to wake up the router.
+	 * or else update router's information.
+	 */
+	private void _wakeUp() {
+		// After a wait, check the WiFi connection by thread.;
+		long delay = MyFunc.getLongPreference(
+				MainService.this,
+				R.string.pref_key_screen_on_wait
+				);
+		Timer timer = new Timer(true);
+		timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				if (!_aterm.hasConnection()) {
+					MyLog.i("wake up when screen on.");
+					_showWakeUpNotification();
+					_aterm.wakeUp();
+				} else {
+					_aterm.updateInfo();
+				}
+			}
+		}, delay);
 	}
 }
