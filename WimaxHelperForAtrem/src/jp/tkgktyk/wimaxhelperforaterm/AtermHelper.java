@@ -264,7 +264,7 @@ public class AtermHelper {
 	/**
 	 * update an Aterm information with HTTP. (executing on AsyncTask is recommended.)
 	 * if connecting to router is succeeded, a new object 'Info' is stored a router's information.
-	 * If any error occurred, information is not update.
+	 * If any error occurred, information is replaced empty.
 	 * e.g. HTTP connection error, information parsing error and so on.
 	 */
 	public void updateInfoAsync() {
@@ -301,15 +301,16 @@ public class AtermHelper {
 					return info;
 				}
 			});
-			
-			// update only when parsing is succeeded.
-			if (info != null) {
-				_info = info;
-				MyLog.v("Aterm's information is updated.");
-			}
 		} catch (IOException e) {
 			MyLog.e(e.toString());
 		} finally {
+			if (info != null) {
+				_info = info;
+				MyLog.v("Aterm's information is updated.");
+			} else {
+				_info = new Info(_context);
+				MyLog.w("Information update is failed.");
+			}
 			httpClient.getConnectionManager().shutdown();
 		}
 	}
