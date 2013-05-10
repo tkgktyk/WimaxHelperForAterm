@@ -27,8 +27,6 @@ public class MainService extends Service {
 	
 	private static final int NOTIFICATION_ID = R.xml.main_preference;
 
-	private AtermHelper _aterm;
-	
 	/**
 	 * Receives these actions.
 	 *	ACTION_GET_INFO
@@ -56,7 +54,7 @@ public class MainService extends Service {
 				switch (info.getState()) {
 				case CONNECTED:
 					MyLog.i("wifi is connected.");
-					_aterm.updateInfo();
+					_getAterm().updateInfo();
 					break;
 				case DISCONNECTED:
 					MyLog.i("wifi is disconnected.");
@@ -110,10 +108,10 @@ public class MainService extends Service {
 	
 	@Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-		_aterm = ((MyApplication)this.getApplication()).getAterm();
-		
 		return Service.START_STICKY;
 	}
+
+	private AtermHelper _getAterm() { return ((MyApplication)this.getApplication()).getAterm(); }
 	
 	/**
 	 * a helper function to show the notification.
@@ -152,7 +150,7 @@ public class MainService extends Service {
 	
 	/**　Notify the Aterm's information. */
 	private void _showNotification() {
-		AtermHelper.Info info = _aterm.getInfo();
+		AtermHelper.Info info = _getAterm().getInfo();
 		if (info.isSet()) {
 			String content = String.format("電波: %d本、バッテリー: %s", info.antenna, info.getBatteryText());
 			_showNotification(content, info.antenna);
@@ -173,7 +171,7 @@ public class MainService extends Service {
 	
 	/** Notify that unsupported. */
 	private void _showUnsupportedNotification() {
-		_showNotification("未対応の接続情報です", 0);
+		_showNotification("未対応の接続情報です", -1);
 	}
 	
 	/**
@@ -191,12 +189,13 @@ public class MainService extends Service {
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				if (!_aterm.hasConnection()) {
+				AtermHelper aterm = _getAterm();
+				if (!aterm.hasConnection()) {
 					MyLog.i("wake up when screen on.");
 					_showWakeUpNotification();
-					_aterm.wakeUp();
+					aterm.wakeUp();
 				} else {
-					_aterm.updateInfo();
+					aterm.updateInfo();
 				}
 			}
 		}, delay);

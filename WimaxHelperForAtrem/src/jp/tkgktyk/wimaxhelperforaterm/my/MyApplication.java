@@ -8,13 +8,15 @@ import android.app.Application;
  */
 public class MyApplication extends Application {
 	private AtermHelper _aterm;
-
-	@Override
-	public void onCreate() {
-		super.onCreate();
-		
-		_aterm = new AtermHelper(this);
+	
+	public AtermHelper getAterm() {
+		if (_aterm == null)
+			_aterm = new AtermHelper(this);
+		return _aterm;
 	}
 	
-	public AtermHelper getAterm() { return _aterm; }
+	@Override
+	public void onLowMemory() {
+		_aterm = null;
+	}
 }

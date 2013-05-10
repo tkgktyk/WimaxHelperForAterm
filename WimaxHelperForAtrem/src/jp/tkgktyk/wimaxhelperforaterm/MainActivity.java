@@ -18,8 +18,6 @@ import android.view.Menu;
  */
 public class MainActivity extends MyPreferenceActivity {
 	
-	private AtermHelper _aterm;
-
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -27,9 +25,6 @@ public class MainActivity extends MyPreferenceActivity {
 
 		// for service
 		this.startService(new Intent(this, MainService.class));
-		
-		// to access to aterm
-		_aterm = ((MyApplication)this.getApplication()).getAterm();
 		
 		// set commands
 		_setCommand(R.string.pref_key_stop_service, new OnYesClickedListner() {
@@ -41,7 +36,7 @@ public class MainActivity extends MyPreferenceActivity {
 		_setCommand(R.string.pref_key_wake_up, new OnYesClickedListner() {
 			@Override
 			public void onYesClicked(Preference preference) {
-				if (_aterm.wakeUp()) {
+				if (_getAterm().wakeUp()) {
 					MyFunc.showToast(MainActivity.this, "リモート起動中");
 				} else {
 					MyFunc.showToast(MainActivity.this, "リモート起動に失敗しました");
@@ -52,14 +47,14 @@ public class MainActivity extends MyPreferenceActivity {
 		_setCommand(R.string.pref_key_standby, new OnYesClickedListner() {
 			@Override
 			public void onYesClicked(Preference preference) {
-				_aterm.standby();
+				_getAterm().standby();
 				MyFunc.showToast(MainActivity.this, "スタンバイ状態に移行中");
 			}
 		});
 		_setCommand(R.string.pref_key_reboot, new OnYesClickedListner() {
 			@Override
 			public void onYesClicked(Preference preference) {
-				_aterm.reboot();
+				_getAterm().reboot();
 				MyFunc.showToast(MainActivity.this, "再起動中");
 			}
 		});
@@ -76,6 +71,8 @@ public class MainActivity extends MyPreferenceActivity {
 		YesNoPreference yesno = (YesNoPreference)this.findPreference(id);
 		yesno.setOnYesClickedListener(listner);
 	}
+	
+	private AtermHelper _getAterm() { return ((MyApplication)this.getApplication()).getAterm(); }
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
