@@ -153,8 +153,12 @@ public class MainService extends Service {
 	/**　Notify the Aterm's information. */
 	private void _showNotification() {
 		AtermHelper.Info info = _aterm.getInfo();
-		String content = String.format("電波: %d本、バッテリー: %s", info.antenna, info.getBatteryText());
-		_showNotification(content, info.antenna);
+		if (info.isSet()) {
+			String content = String.format("電波: %d本、バッテリー: %s", info.antenna, info.getBatteryText());
+			_showNotification(content, info.antenna);
+		} else {
+			_showUnsupportedNotification();
+		}
 	}
 
 	/** Notify that under preparation. */
@@ -165,6 +169,11 @@ public class MainService extends Service {
 	/** Notify that now waking up.　*/
 	private void _showWakeUpNotification() {
 		_showNotification("リモート起動中", 0);
+	}
+	
+	/** Notify that unsupported. */
+	private void _showUnsupportedNotification() {
+		_showNotification("未対応の接続情報です", 0);
 	}
 	
 	/**

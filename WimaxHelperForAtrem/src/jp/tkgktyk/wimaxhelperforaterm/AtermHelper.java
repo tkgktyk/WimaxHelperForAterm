@@ -64,7 +64,7 @@ public class AtermHelper {
 		public String btName = "";
 		private String _btAddress = "";
 		public String status = "";
-		public int antenna;
+		public int antenna = -1;
 		public String ipAddress = "";
 		
 		/**
@@ -75,6 +75,8 @@ public class AtermHelper {
 			_context = context;
 			_btAddress = MyFunc.getStringPreference(_context, R.string.pref_key_bt_address);
 		}
+		
+		public boolean isSet() { return antenna != -1; }
 		
 		/**
 		 * Make a text that represents the rest of battery.
@@ -492,7 +494,7 @@ public class AtermHelper {
 		ConnectivityManager cm
 		= (ConnectivityManager)_context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo info = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-		return info.isConnectedOrConnecting();
+		return info.isConnected();
 	}
 	
 	/**
