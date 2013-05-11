@@ -27,6 +27,7 @@ public class AtermWM3800R implements Router {
 		BATTERY("電池残量"),
 		RSSI("RSSI"),
 		CINR("CINR"),
+		SSID("ネットワーク名(SSID)"),
 		WAN_TOGETHER("WiFi WAN側連動"),
 		BLUETOOTH_NAME("Bluetooth名"),
 		BLUETOOTH_ADDRESS("MACアドレス(Bluetooth)"),
@@ -97,6 +98,9 @@ public class AtermWM3800R implements Router {
 				case CINR:
 					info.cinr = Integer.parseInt(v.substring(0, v.indexOf(' ')));
 					break;
+				case SSID:
+					info.ssid.add(v);
+					break;
 				case WAN_TOGETHER:
 					info.wanTogether = v.equals("enable");
 					break;
@@ -113,10 +117,8 @@ public class AtermWM3800R implements Router {
 					info.antenna = Integer.parseInt(v.substring(v.indexOf("：") + 1));
 					break;
 				case IP_ADDRESS:
-					// IP address matches some data
-					// in this case only first data is stored
-					if (info.ipAddress == null || info.ipAddress.length() == 0)
-						info.ipAddress = v.substring(0, v.indexOf('/'));
+					// remove sub net mask.
+					info.ipAddress.add(v.substring(0, v.indexOf('/')));
 					break;
 				}
 			} catch (Exception e) {

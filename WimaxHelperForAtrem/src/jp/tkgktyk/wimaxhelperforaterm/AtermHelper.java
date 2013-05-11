@@ -2,6 +2,8 @@ package jp.tkgktyk.wimaxhelperforaterm;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import jp.tkgktyk.wimaxhelperforaterm.my.MyFunc;
@@ -34,6 +36,8 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiManager;
 import android.os.IBinder;
 
 /**
@@ -60,12 +64,13 @@ public class AtermHelper {
 		public boolean charging = false;
 		public int rssi = -999;
 		public int cinr = -1;
+		public List<String> ssid = new ArrayList();
 		public boolean wanTogether = false;
 		public String btName = "";
 		private String _btAddress = "";
 		public String status = "";
 		public int antenna = -1;
-		public String ipAddress = "";
+		public List<String> ipAddress = new ArrayList();
 		
 		/**
 		 * Load preferences. Default parameters of member is set in define statement.
@@ -464,7 +469,7 @@ public class AtermHelper {
 			(new Thread(new Runnable() {
 				@Override
 				public void run() {
-					MyLog.i("does wake up.");
+					MyLog.i("wake up.");
 					
 					// wake up Aterm
 					_bt.connect(
@@ -486,15 +491,22 @@ public class AtermHelper {
 	}
 	
 	/**
-	 * Check the WiFi connection is active.
+	 * Check whether catch the router's radio.
 	 * @return
-	 * return true when already connected or now connecting.
+	 * return true when catch the radio.
 	 */
-	public boolean hasConnection() {
-		ConnectivityManager cm
-		= (ConnectivityManager)_context.getSystemService(Context.CONNECTIVITY_SERVICE);
-		NetworkInfo info = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-		return info.isConnected();
+	public boolean isActive() {
+		WifiManager wm = (WifiManager)_context.getSystemService(Context.WIFI_SERVICE);
+		if (wm.getWifiState() == WifiManager.WIFI_STATE_ENABLED) {
+			// scan active WiFi access point.
+			wm.startScan();
+			List<ScanResult> results = wm.getScanResults();
+			for (ScanResult r : results) {
+				if (_info.ssid.contains(r.SSID))
+					return true;
+			}
+		}
+		return false;
 	}
 	
 	/**
