@@ -37,9 +37,9 @@ public class MainActivity extends MyPreferenceActivity {
 			@Override
 			public void onYesClicked(Preference preference) {
 				if (_getAterm().wakeUp()) {
-					MyFunc.showToast(MainActivity.this, "リモート起動中");
+					MyFunc.showToast("リモート起動中");
 				} else {
-					MyFunc.showToast(MainActivity.this, "リモート起動に失敗しました");
+					MyFunc.showToast("リモート起動に失敗しました");
 					MyLog.w("failed to wake up");
 				}
 			}
@@ -48,14 +48,14 @@ public class MainActivity extends MyPreferenceActivity {
 			@Override
 			public void onYesClicked(Preference preference) {
 				_getAterm().standby();
-				MyFunc.showToast(MainActivity.this, "スタンバイ状態に移行中");
+				MyFunc.showToast("スタンバイ状態に移行中");
 			}
 		});
 		_setCommand(R.string.pref_key_reboot, new OnYesClickedListner() {
 			@Override
 			public void onYesClicked(Preference preference) {
 				_getAterm().reboot();
-				MyFunc.showToast(MainActivity.this, "再起動中");
+				MyFunc.showToast("再起動中");
 			}
 		});
 	}

@@ -181,10 +181,7 @@ public class MainService extends Service {
 	 */
 	private void _wakeUp() {
 		// After a wait, check the WiFi connection by thread.;
-		long delay = MyFunc.getLongPreference(
-				MainService.this,
-				R.string.pref_key_screen_on_wait
-				);
+		long delay = MyFunc.getLongPreference(R.string.pref_key_screen_on_wait);
 		Timer timer = new Timer(true);
 		timer.schedule(new TimerTask() {
 			@Override

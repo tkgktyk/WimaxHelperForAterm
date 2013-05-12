@@ -81,8 +81,8 @@ public class AtermHelper {
 		public Info(Context context) {
 			_context = context;
 			_needSave = false;
-			_ssidSet = MyFunc.getSetPreference(_context, R.string.pref_key_aterm_ssid);
-			_btAddress = MyFunc.getStringPreference(_context, R.string.pref_key_bt_address);
+			_ssidSet = MyFunc.getSetPreference(R.string.pref_key_aterm_ssid);
+			_btAddress = MyFunc.getStringPreference(R.string.pref_key_bt_address);
 		}
 		
 		public boolean isValid() { return antenna >= 0; }
@@ -139,8 +139,8 @@ public class AtermHelper {
 		 */
 		public void save() {
 			if (_needSave) {
-				MyFunc.setStringPreference(_context, R.string.pref_key_bt_address, _btAddress);
-				MyFunc.setSetPreference(_context, R.string.pref_key_aterm_ssid, _ssidSet);
+				MyFunc.setStringPreference(R.string.pref_key_bt_address, _btAddress);
+				MyFunc.setSetPreference(R.string.pref_key_aterm_ssid, _ssidSet);
 				_needSave = false;
 			}
 		}
@@ -242,12 +242,11 @@ public class AtermHelper {
 		_context = context;
 		_info = new Info(context);
 		
-		_setRouter(MyFunc.getStringPreference(_context, R.string.pref_key_aterm_product));
+		_setRouter(MyFunc.getStringPreference(R.string.pref_key_aterm_product));
 		
 		// set default host name
 		if (_getHostName().length() == 0) {
 			MyFunc.setStringPreference(
-					_context,
 					R.string.pref_key_aterm_host_name,
 					Const.ATERM_DEFAULT_HOST_NAME
 					);
@@ -260,7 +259,7 @@ public class AtermHelper {
 	 * Router's host name.
 	 */
 	private String _getHostName() {
-		return MyFunc.getStringPreference(_context, R.string.pref_key_aterm_host_name);
+		return MyFunc.getStringPreference(R.string.pref_key_aterm_host_name);
 	}
 	
 	/**
@@ -276,7 +275,7 @@ public class AtermHelper {
 		}
 		if (p != Product.UNSUPPORTED) {
 			// save product to DefaultSharedPreferences
-			MyFunc.setStringPreference(_context, R.string.pref_key_aterm_product, product);
+			MyFunc.setStringPreference(R.string.pref_key_aterm_product, product);
 		}
 		// select Router
 		switch (p) {
@@ -401,7 +400,7 @@ public class AtermHelper {
 		String address = _info.getBtAddress();
 		if (!BluetoothAdapter.checkBluetoothAddress(address)) {
 			MyLog.w("invalid bluetooth address: " + address);
-			MyFunc.showToast(_context, "Bluetoothアドレスが不正です： " + address);
+			MyFunc.showToast("Bluetoothアドレスが不正です： " + address);
 			return false;
 		}
 		Intent intent = new Intent(_context, WakeUpService.class);
@@ -496,10 +495,7 @@ public class AtermHelper {
 					// wake up Aterm
 					_bt.connect(
 							_address,
-							MyFunc.getLongPreference(
-									WakeUpService.this,
-									R.string.pref_key_bt_connect_timeout
-									)
+							MyFunc.getLongPreference(R.string.pref_key_bt_connect_timeout)
 							);
 					
 					// after treatment

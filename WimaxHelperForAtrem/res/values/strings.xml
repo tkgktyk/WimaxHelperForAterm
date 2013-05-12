@@ -17,6 +17,7 @@
     <string name="pref_key_standby">pref_key_standby</string>
     <string name="pref_key_reboot">pref_key_reboot</string>
     <!-- value -->
+    <string name="pref_key_version_name">pref_key_version_name</string>
     <string name="pref_key_aterm_host_name">pref_key_aterm_host_name</string>
     <string name="pref_key_aterm_product">pref_key_aterm_product</string>
     <string name="pref_key_aterm_ssid">pref_key_aterm_ssid</string>

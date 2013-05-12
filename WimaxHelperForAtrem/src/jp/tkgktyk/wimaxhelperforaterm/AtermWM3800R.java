@@ -125,7 +125,7 @@ public class AtermWM3800R implements Router {
 				}
 				info.save();
 			} catch (Exception e) {
-				MyLog.e("parse error: " + v);
+				MyLog.e("parse error: " + v + "@" + key.text());
 				MyLog.e(e.toString());
 			}
 		}

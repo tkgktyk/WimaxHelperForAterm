@@ -17,64 +17,69 @@ import android.util.Log;
 import android.widget.Toast;
 
 public class MyFunc {
-	public static void showToast(Context context, int id) {
-		showToast(context, context.getString(id));
+	private static Context _context;
+	
+	public static void setContext(Context context) { _context = context; }
+	
+	public static void showToast(int id) {
+		showToast(_context.getString(id));
 	}
-	public static void showToast(Context context, String text) {
+	public static void showToast(String text) {
 		Toast
-		.makeText(context, text, Toast.LENGTH_SHORT)
+		.makeText(_context, text, Toast.LENGTH_SHORT)
 		.show();
 	}
-	private static void showLongToast(Context context, String text) {
+	private static void showLongToast(String text) {
 		Toast
-		.makeText(context, text, Toast.LENGTH_LONG)
+		.makeText(_context, text, Toast.LENGTH_LONG)
 		.show();
 	}
-	public static void showFinishedToast(Context context, int id) {
-		showToast(context, context.getString(R.string.s1_finished, context.getString(id)));
+	public static void showFinishedToast(int id) {
+		showToast(_context.getString(R.string.s1_finished, _context.getString(id)));
 	}
-	public static void showFailedToast(Context context, int id) {
-		showToast(context, context.getString(R.string.s1_failed, context.getString(id)));
+	public static void showFailedToast(int id) {
+		showToast(_context.getString(R.string.s1_failed, _context.getString(id)));
 	}
-	public static void runtimeError(Context context, int id) {
-		runtimeError(context, context.getString(id));
+	public static void runtimeError(int id) {
+		runtimeError(_context.getString(id));
 	}
-	public static void runtimeError(Context context, String text) {
+	public static void runtimeError(String text) {
 		String tag = Thread.currentThread().getStackTrace()[3].getMethodName();
 		Log.e(tag, text);
-		MyFunc.showLongToast(context, "Runtime Error: function is failed");
+		MyFunc.showLongToast("Runtime Error: function is failed");
 	}
-	public static void runtimeError(Context context, Throwable e) {
+	public static void runtimeError(Throwable e) {
 		String tag = Thread.currentThread().getStackTrace()[3].getMethodName();
 		Log.e(tag, e.toString());
-		MyFunc.showLongToast(context, "Runtime Error: function is failed");
+		MyFunc.showLongToast("Runtime Error: function is failed");
 	}
-	public static String getStringPreference(Context context, int keyId) {
-		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
-		return pref.getString(context.getString(keyId), "");
+	public static String getStringPreference(int keyId) {
+		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(_context);
+		return pref.getString(_context.getString(keyId), "");
 	}
-	public static void setStringPreference(Context context, int keyId, String value) {
-		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+	public static void setStringPreference(int keyId, String value) {
+		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(_context);
 		pref.edit()
-		.putString(context.getString(keyId), value)
+		.putString(_context.getString(keyId), value)
 		.apply();
 	}
-	public static Long getLongPreference(Context context, int keyId) {
-		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
-		return Long.parseLong(pref.getString(context.getString(keyId), "0"));
+	public static Long getLongPreference(int keyId) {
+		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(_context);
+		return Long.parseLong(pref.getString(_context.getString(keyId), "0"));
 	}
-	public static void setLongPreference(Context context, int keyId, long value) {
-		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
+	public static void setLongPreference(int keyId, long value) {
+		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(_context);
 		pref.edit()
-		.putString(context.getString(keyId), String.valueOf(value))
+		.putString(_context.getString(keyId), String.valueOf(value))
 		.apply();
 	}
-	public static <T> Set<T> getSetPreference(Context context, int keyId) {
-		String filename = context.getString(keyId);
+	public static <T> Set<T> getSetPreference(int keyId) {
+		String filename = _context.getString(keyId);
+		Set<T> result = null;
 		try {
-			FileInputStream fis = context.openFileInput(filename);
+			FileInputStream fis = _context.openFileInput(filename);
 			ObjectInputStream ois = new ObjectInputStream(fis);
-			return (Set<T>)ois.readObject();
+			result = (Set<T>)ois.readObject();
 		} catch (FileNotFoundException e) {
 			MyLog.i("a local file is not found: " + filename);
 		} catch (IOException e) {
@@ -82,12 +87,14 @@ public class MyFunc {
 		} catch (ClassNotFoundException e) {
 			MyLog.e(e.toString());
 		}
-		return new HashSet<T>();
+		if (result == null)
+			result = new HashSet<T>();
+		return result;
 	}
-	public static <T> void setSetPreference(Context context, int keyId, Set<T> value) {
-		String filename = context.getString(keyId);
+	public static <T> void setSetPreference(int keyId, Set<T> value) {
+		String filename = _context.getString(keyId);
 		try {
-			FileOutputStream fos = context.openFileOutput(filename, Context.MODE_PRIVATE);
+			FileOutputStream fos = _context.openFileOutput(filename, Context.MODE_PRIVATE);
 			ObjectOutputStream oos = new ObjectOutputStream(fos);
 			oos.writeObject(value);
 		} catch (FileNotFoundException e) {
@@ -95,5 +102,9 @@ public class MyFunc {
 		} catch (IOException e) {
 			MyLog.e(e.toString());
 		}
+	}
+	public static void removePreference(int keyId) {
+		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(_context);
+		pref.edit().remove(_context.getString(keyId)).apply();
 	}
 }
