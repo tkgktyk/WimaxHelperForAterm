@@ -115,4 +115,9 @@ public class MyFunc {
 		String ignores = "[ \t\n\r]";
 		return str.replaceAll(ignores, "").replace("Å@", " ");
 	}
+	
+	public static String getAppTitle() {
+		return _context.getString(R.string.app_name)
+				+ " " + getStringPreference(R.string.pref_key_version_name);
+	}
 }

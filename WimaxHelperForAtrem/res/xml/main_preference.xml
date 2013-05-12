@@ -2,11 +2,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
     <PreferenceCategory android:title="コマンド" >
         <jp.tkgktyk.wimaxhelperforaterm.YesNoPreference
-	        android:key="@string/pref_key_stop_service"
-	        android:title="サービス停止"
-	        android:summary="W.H.A.のサービスを停止します"
-	        android:dialogMessage="実行しますか？" />
-        <jp.tkgktyk.wimaxhelperforaterm.YesNoPreference
 	        android:key="@string/pref_key_update_information"
 	        android:title="ルーター情報"
 	        android:summary=""
@@ -14,17 +9,17 @@
         <jp.tkgktyk.wimaxhelperforaterm.YesNoPreference
 	        android:key="@string/pref_key_wake_up"
 	        android:title="リモート起動"
-	        android:summary="Atermをリモート起動します"
+	        android:summary="ルーターをリモート起動します"
 	        android:dialogMessage="実行しますか？" />
         <jp.tkgktyk.wimaxhelperforaterm.YesNoPreference
 	        android:key="@string/pref_key_standby"
-	        android:title="スタンバイ"
-	        android:summary="Atermをスタンバイ状態にします"
+	        android:title="スタンバイ（未実装）"
+	        android:summary="ルーターをスタンバイ状態にします"
 	        android:dialogMessage="実行しますか？" />
         <jp.tkgktyk.wimaxhelperforaterm.YesNoPreference
 	        android:key="@string/pref_key_reboot"
-	        android:title="再起動"
-	        android:summary="Atermを再起動します"
+	        android:title="再起動（未実装）"
+	        android:summary="ルーターを再起動します"
 	        android:dialogMessage="実行しますか？" />
     </PreferenceCategory>
     <PreferenceCategory android:title="設定" >
@@ -38,11 +33,11 @@
     	            android:summary="クイック設定Webのアドレス"
     	            android:title="Atermホスト名" />
     	        <EditTextPreference
-    	            android:defaultValue="2000"
+    	            android:defaultValue="0"
     	            android:dialogTitle="ウェイト時間[msec]"
     	            android:inputType="number"
     	            android:key="@string/pref_key_screen_on_wait"
-    	            android:summary="画面ON後のウェイト"
+    	            android:summary="画面ON後にコマンドを実行するまでのウェイト時間"
     	            android:title="ウェイト時間" />
     	    </PreferenceCategory>
     	</PreferenceScreen>
@@ -62,6 +57,13 @@
     	            android:key="@string/pref_key_bt_connect_timeout"
     	            android:summary="リモート起動のタイムアウト時間"
     	            android:title="タイムアウト" />
+    	    </PreferenceCategory>
+    	    <PreferenceCategory android:title="サービス" >
+    	        <jp.tkgktyk.wimaxhelperforaterm.YesNoPreference
+                    android:key="@string/pref_key_stop_service"
+                    android:title="サービス停止"
+                    android:summary="W.H.A.のサービスを停止します"
+                    android:dialogMessage="実行しますか？" />
     	    </PreferenceCategory>
     	</PreferenceScreen>
     	

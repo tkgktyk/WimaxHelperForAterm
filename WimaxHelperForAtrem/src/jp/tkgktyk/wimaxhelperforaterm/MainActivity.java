@@ -48,6 +48,7 @@ public class MainActivity extends MyPreferenceActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		this.addPreferencesFromResource(R.xml.main_preference);
+		this.setTitle(MyFunc.getAppTitle());
 
 		// for service
 		this.startService(new Intent(this, MainService.class));

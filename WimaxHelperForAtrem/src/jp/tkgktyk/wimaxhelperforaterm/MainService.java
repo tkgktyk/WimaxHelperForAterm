@@ -140,7 +140,7 @@ public class MainService extends Service {
 		= PendingIntent.getActivity(this, 0, intent, 0);
 		notification.setLatestEventInfo(
 				this,
-				this.getString(R.string.app_name),
+				MyFunc.getAppTitle(),
 				content,
 				contentIntent
 				);
