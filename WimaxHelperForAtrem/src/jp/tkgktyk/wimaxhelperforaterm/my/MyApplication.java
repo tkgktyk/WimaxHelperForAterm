@@ -29,7 +29,7 @@ public class MyApplication extends Application {
 			
 			public Version(String version) {
 				if (version != null && version.length() != 0) {
-					String[] v = version.split(".");
+					String[] v = version.split("\\.");
 					int n = v.length;
 					if (n >= 1)
 						major = Integer.parseInt(v[0]);
@@ -63,7 +63,7 @@ public class MyApplication extends Application {
 		Version current = new Version(version);
 		
 		// care of changing version
-		if (last.toInt() < new Version("1.1.3").toInt()) {
+		if (last.toInt() < new Version("1.1.4").toInt()) {
 			// introduce preferences of router's SSID and versionName.
 			// SSID is saved only when Bluetooth MAC address is changed.
 			// so remove Bluetooth MAC address on preference to save SSID.
