@@ -188,7 +188,6 @@ public class MainService extends Service {
 			public void run() {
 				AtermHelper aterm = _getAterm();
 				if (!aterm.isActive()) {
-					MyLog.i("wake up when screen on.");
 					_showWakeUpNotification();
 					aterm.wakeUp();
 				} else {

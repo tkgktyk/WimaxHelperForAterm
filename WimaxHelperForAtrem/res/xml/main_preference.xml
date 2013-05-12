@@ -7,9 +7,14 @@
 	        android:summary="W.H.A.のサービスを停止します"
 	        android:dialogMessage="実行しますか？" />
         <jp.tkgktyk.wimaxhelperforaterm.YesNoPreference
+	        android:key="@string/pref_key_update_information"
+	        android:title="ルーター情報"
+	        android:summary=""
+	        android:dialogMessage="更新しますか？" />
+        <jp.tkgktyk.wimaxhelperforaterm.YesNoPreference
 	        android:key="@string/pref_key_wake_up"
-	        android:title="リモード起動"
-	        android:summary="Atermのリモート起動を試みます"
+	        android:title="リモート起動"
+	        android:summary="Atermをリモート起動します"
 	        android:dialogMessage="実行しますか？" />
         <jp.tkgktyk.wimaxhelperforaterm.YesNoPreference
 	        android:key="@string/pref_key_standby"
@@ -27,14 +32,14 @@
     	<PreferenceScreen android:title="アプリの設定" >
     	    <PreferenceCategory android:title="全般" >
     	        <EditTextPreference
-    	            android:dialogMessage="Atermホスト名"
+    	            android:dialogTitle="Atermホスト名"
     	            android:inputType="text"
     	            android:key="@string/pref_key_aterm_host_name"
     	            android:summary="クイック設定Webのアドレス"
     	            android:title="Atermホスト名" />
     	        <EditTextPreference
     	            android:defaultValue="2000"
-    	            android:dialogMessage="ウェイト時間[msec]"
+    	            android:dialogTitle="ウェイト時間[msec]"
     	            android:inputType="number"
     	            android:key="@string/pref_key_screen_on_wait"
     	            android:summary="画面ON後のウェイト"
@@ -45,14 +50,14 @@
     	<PreferenceScreen android:title="高度な設定" >
     	    <PreferenceCategory android:title="リモート起動" >
     	        <EditTextPreference
-    	            android:dialogMessage="Bluetoothアドレス"
+    	            android:dialogTitle="Bluetoothアドレス"
     	            android:inputType="text"
     	            android:key="@string/pref_key_bt_address"
     	            android:summary="ルーターのBluetoothのMACアドレス"
     	            android:title="Bluetoothアドレス" />
     	        <EditTextPreference
     	            android:defaultValue="1000"
-    	            android:dialogMessage="タイムアウト[msec]"
+    	            android:dialogTitle="タイムアウト[msec]"
     	            android:inputType="number"
     	            android:key="@string/pref_key_bt_connect_timeout"
     	            android:summary="リモート起動のタイムアウト時間"

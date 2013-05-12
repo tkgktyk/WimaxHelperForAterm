@@ -13,6 +13,7 @@
     <!-- for Preference -->
     <!-- commands -->
     <string name="pref_key_stop_service">pref_key_stop_service</string>
+    <string name="pref_key_update_information">pref_key_update_information</string>
     <string name="pref_key_wake_up">pref_key_wake_up</string>
     <string name="pref_key_standby">pref_key_standby</string>
     <string name="pref_key_reboot">pref_key_reboot</string>

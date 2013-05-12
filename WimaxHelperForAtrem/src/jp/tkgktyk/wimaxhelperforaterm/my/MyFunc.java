@@ -107,4 +107,12 @@ public class MyFunc {
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(_context);
 		pref.edit().remove(_context.getString(keyId)).apply();
 	}
+	
+	public static String normalize(String str) {
+		if (str == null || str.length() == 0)
+			return "";
+
+		String ignores = "[ \t\n\r]";
+		return str.replaceAll(ignores, "").replace("Å@", " ");
+	}
 }

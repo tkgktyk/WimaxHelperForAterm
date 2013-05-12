@@ -209,7 +209,10 @@ public class AtermHelper {
 	 * To use String in switch statement.
 	 */
 	public enum Product {
-		WM3800R("A t e r mÅ@W M 3 8 0 0 R"),
+		/**
+		 * Product name is normalized by {@link MyFunc#normalize(String)}
+		 */
+		WM3800R("Aterm WM3800R"),
 		UNSUPPORTED("");
 
 	    private final String _name;
@@ -263,6 +266,13 @@ public class AtermHelper {
 	}
 	
 	/**
+	 * Getter of router class.
+	 * @return
+	 * connecting router.
+	 */
+	public Router getRouter() { return _router; }
+	
+	/**
 	 * Setter of router class.
 	 * @param product
 	 * Select router by this.
@@ -270,7 +280,7 @@ public class AtermHelper {
 	private void _setRouter(String product) {
 		Product p = Product.toProduct(product);
 		if (_router != null && _router.toProduct() == p) {
-			// always set same router.
+			// already set same router.
 			return;
 		}
 		if (p != Product.UNSUPPORTED) {
@@ -313,7 +323,7 @@ public class AtermHelper {
 							// Jsoup.parse closes InputStream after parsing
 							Document doc = Jsoup.parse(entity.getContent(), "euc-jp", "http://aterm.me/index.cgi");
 							MyLog.d(doc.title());
-							String product = doc.select(".product span").text();
+							String product = MyFunc.normalize(doc.select(".product span").text());
 							MyLog.d(product);
 							_setRouter(product);
 							info = _router.parseDocument(doc, _context);
@@ -344,7 +354,7 @@ public class AtermHelper {
 	}
 	
 	/**
-	 * Start update information thread implemented by {@link #updateInfoAsync()}.
+	 * Start an update information thread implemented by {@link #updateInfoAsync()}.
 	 */
 	public void updateInfo() {
 		(new Thread(new Runnable() {
