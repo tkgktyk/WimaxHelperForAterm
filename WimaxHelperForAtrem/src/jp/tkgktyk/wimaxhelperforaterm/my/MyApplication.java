@@ -64,7 +64,7 @@ public class MyApplication extends Application {
 		
 		// care of changing version
 		if (last.toInt() < new Version("1.1.3").toInt()) {
-			// introduce preference of router's SSID and versionName.
+			// introduce preferences of router's SSID and versionName.
 			// SSID is saved only when Bluetooth MAC address is changed.
 			// so remove Bluetooth MAC address on preference to save SSID.
 			MyFunc.removePreference(R.string.pref_key_bt_address);
@@ -73,7 +73,6 @@ public class MyApplication extends Application {
 			// so reset screen_on_wait preference.
 			MyFunc.removePreference(R.string.pref_key_screen_on_wait);
 		}
-		
 	}
 	
 	public AtermHelper getAterm() {
