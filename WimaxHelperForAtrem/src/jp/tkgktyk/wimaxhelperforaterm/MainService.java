@@ -151,7 +151,7 @@ public class MainService extends Service {
 	/**　Notify the Aterm's information. */
 	private void _showNotification() {
 		AtermHelper.Info info = _getAterm().getInfo();
-		if (info.isSet()) {
+		if (info.isValid()) {
 			String content = String.format("電波: %d本、バッテリー: %s", info.antenna, info.getBatteryText());
 			_showNotification(content, info.antenna);
 		} else {

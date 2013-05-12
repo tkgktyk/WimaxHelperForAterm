@@ -99,7 +99,7 @@ public class AtermWM3800R implements Router {
 					info.cinr = Integer.parseInt(v.substring(0, v.indexOf(' ')));
 					break;
 				case SSID:
-					info.ssid.add(v);
+					info.addSsid(v);
 					break;
 				case WAN_TOGETHER:
 					info.wanTogether = v.equals("enable");
@@ -120,7 +120,10 @@ public class AtermWM3800R implements Router {
 					// remove sub net mask.
 					info.ipAddress.add(v.substring(0, v.indexOf('/')));
 					break;
+				default:
+					// do nothing
 				}
+				info.save();
 			} catch (Exception e) {
 				MyLog.e("parse error: " + v);
 				MyLog.e(e.toString());

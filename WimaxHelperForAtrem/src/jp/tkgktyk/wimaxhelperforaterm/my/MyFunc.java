@@ -1,5 +1,14 @@
 package jp.tkgktyk.wimaxhelperforaterm.my;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.HashSet;
+import java.util.Set;
+
 import jp.tkgktyk.wimaxhelperforaterm.R;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -48,7 +57,7 @@ public class MyFunc {
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
 		pref.edit()
 		.putString(context.getString(keyId), value)
-		.commit();
+		.apply();
 	}
 	public static Long getLongPreference(Context context, int keyId) {
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
@@ -58,6 +67,33 @@ public class MyFunc {
 		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(context);
 		pref.edit()
 		.putString(context.getString(keyId), String.valueOf(value))
-		.commit();
+		.apply();
+	}
+	public static <T> Set<T> getSetPreference(Context context, int keyId) {
+		String filename = context.getString(keyId);
+		try {
+			FileInputStream fis = context.openFileInput(filename);
+			ObjectInputStream ois = new ObjectInputStream(fis);
+			return (Set<T>)ois.readObject();
+		} catch (FileNotFoundException e) {
+			MyLog.i("a local file is not found: " + filename);
+		} catch (IOException e) {
+			MyLog.e(e.toString());
+		} catch (ClassNotFoundException e) {
+			MyLog.e(e.toString());
+		}
+		return new HashSet<T>();
+	}
+	public static <T> void setSetPreference(Context context, int keyId, Set<T> value) {
+		String filename = context.getString(keyId);
+		try {
+			FileOutputStream fos = context.openFileOutput(filename, Context.MODE_PRIVATE);
+			ObjectOutputStream oos = new ObjectOutputStream(fos);
+			oos.writeObject(value);
+		} catch (FileNotFoundException e) {
+			MyLog.i("a local file is not found: " + filename);
+		} catch (IOException e) {
+			MyLog.e(e.toString());
+		}
 	}
 }

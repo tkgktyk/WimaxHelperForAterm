@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import jp.tkgktyk.wimaxhelperforaterm.my.MyFunc;
 import jp.tkgktyk.wimaxhelperforaterm.my.MyLog;
@@ -33,8 +34,6 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
@@ -58,19 +57,22 @@ public class AtermHelper {
 	 */
 	public static class Info implements Serializable {
 		private Context _context;
+		/** save flag used in save() function. set true when Bluetooth MAC address is changed. */
+		private boolean _needSave;
+
 		public String version = "";
 		public boolean updateNotified = false;
 		private int _battery = -1;
 		public boolean charging = false;
 		public int rssi = -999;
 		public int cinr = -1;
-		public List<String> ssid = new ArrayList();
+		private Set<String> _ssidSet;
 		public boolean wanTogether = false;
 		public String btName = "";
-		private String _btAddress = "";
+		private String _btAddress;
 		public String status = "";
 		public int antenna = -1;
-		public List<String> ipAddress = new ArrayList();
+		public List<String> ipAddress = new ArrayList<String>();
 		
 		/**
 		 * Load preferences. Default parameters of member is set in define statement.
@@ -78,10 +80,12 @@ public class AtermHelper {
 		 */
 		public Info(Context context) {
 			_context = context;
+			_needSave = false;
+			_ssidSet = MyFunc.getSetPreference(_context, R.string.pref_key_aterm_ssid);
 			_btAddress = MyFunc.getStringPreference(_context, R.string.pref_key_bt_address);
 		}
 		
-		public boolean isSet() { return antenna != -1; }
+		public boolean isValid() { return antenna >= 0; }
 		
 		/**
 		 * Make a text that represents the rest of battery.
@@ -97,18 +101,27 @@ public class AtermHelper {
 		 * Setter of battery.
 		 * @param battery
 		 */
-		public void setBattery(int battery) {
-			_battery = battery;
-		}
+		public void setBattery(int battery) { _battery = battery; }
+		
+		/**
+		 * Getter of router's ssids
+		 * @return
+		 * set of router's ssid
+		 */
+		public Set<String> getSsidSet() { return _ssidSet; }
+		
+		/**
+		 * Wrapper of add function of SSID's Set Object
+		 * @param ssid
+		 */
+		public void addSsid(String ssid) { _ssidSet.add(ssid); }
 		
 		/**
 		 * Getter of Bluetooth MAC address.
 		 * @return
 		 * Bluetooth MAC address.
 		 */
-		public String getBtAddress() {
-			return _btAddress;
-		}
+		public String getBtAddress() { return _btAddress; }
 		
 		/**
 		 * Setter of Bluetooth MAC address.
@@ -117,9 +130,18 @@ public class AtermHelper {
 		 */
 		public void setBtAddress(String address) {
 			String newAddress = address.toUpperCase(Locale.US);
-			if (!_btAddress.equals(newAddress)) {
-				MyFunc.setStringPreference(_context, R.string.pref_key_bt_address, newAddress);
-				_btAddress = newAddress;
+			_needSave = !_btAddress.equals(newAddress);
+			_btAddress = newAddress;
+		}
+		
+		/**
+		 * Save router's information to myPreference if need.
+		 */
+		public void save() {
+			if (_needSave) {
+				MyFunc.setStringPreference(_context, R.string.pref_key_bt_address, _btAddress);
+				MyFunc.setSetPreference(_context, R.string.pref_key_aterm_ssid, _ssidSet);
+				_needSave = false;
 			}
 		}
 	}
@@ -501,8 +523,9 @@ public class AtermHelper {
 			// scan active WiFi access point.
 			wm.startScan();
 			List<ScanResult> results = wm.getScanResults();
+			Set<String> ssid = _info.getSsidSet();
 			for (ScanResult r : results) {
-				if (_info.ssid.contains(r.SSID))
+				if (ssid.contains(r.SSID))
 					return true;
 			}
 		}
