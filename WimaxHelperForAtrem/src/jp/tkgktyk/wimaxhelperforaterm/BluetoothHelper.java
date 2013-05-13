@@ -1,12 +1,16 @@
 package jp.tkgktyk.wimaxhelperforaterm;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import jp.tkgktyk.wimaxhelperforaterm.my.MyLog;
-
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.os.Build;
 
 /**
  * A helper class for Bluetooth.
@@ -16,12 +20,10 @@ public class BluetoothHelper {
 	private final BluetoothAdapter _adapter;
 	/** Does this class need to control enable of bluetooth? */
 	private boolean _needsEnableControl;
-	private BluetoothSocket _socket;
 	
 	public BluetoothHelper() {
 		_adapter = BluetoothAdapter.getDefaultAdapter();
 		_needsEnableControl = hasDevice()? !_adapter.isEnabled(): false;
-		_socket = null;
 	}
 	
 	/**
@@ -58,37 +60,47 @@ public class BluetoothHelper {
 			return;
 		}
 		BluetoothDevice device = _adapter.getRemoteDevice(address);
-		// normally bluetooth socket's timeout is 12 seconds.
-		// more quickly, uses close thread. 
-		Thread closeThread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				if (_socket != null) {
+		try {
+			// create unpaired RFCOMM socket
+			BluetoothSocket socket = null;
+			if (Build.VERSION.SDK_INT >= 10) {
+				try {
+					Method m = device.getClass().getMethod("createInsecureRfcommSocket", new Class[] { int.class });
+					socket = (BluetoothSocket) m.invoke(device, 1);
+				} catch (SecurityException e) {
+					e.printStackTrace();
+				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
+				} catch (NoSuchMethodException e) {
+					e.printStackTrace();
+				} catch (IllegalAccessException e) {
+					e.printStackTrace();
+				} catch (InvocationTargetException e) {
+					e.printStackTrace();
+				}
+				if (socket == null)
+					return;
+			} else {
+				socket = device.createInsecureRfcommSocketToServiceRecord(Const.BLUETOOTH_UUID);
+			}
+			// normally bluetooth socket's timeout is 12 seconds.
+			// more quickly, uses close thread.
+			final BluetoothSocket finalSocket = socket;
+			Timer timer = new Timer(false);
+			timer.schedule(new TimerTask() {
+				@Override
+				public void run() {
 					try {
-						Thread.sleep(timeout);
-					} catch (InterruptedException e) {
-						// do nothing
-					}
-					try {
-						_socket.close();
+						finalSocket.close();
 					} catch (IOException e) {
 						// do nothing
-					} finally {
-						_socket = null;
 					}
 				}
-			}
-		});
-		try {
-			_socket = device.createRfcommSocketToServiceRecord(Const.BLUETOOTH_UUID);
-			closeThread.start();
-			_socket.connect();
+			}, timeout);
+			socket.connect();
 		} catch (IOException e) {
 			// always reaches here
 		} finally {
-			if (closeThread.isAlive())
-				// interrupt thread and close socket
-				closeThread.interrupt();
 			MyLog.v("tryed wake up.");
 		}
 	}
