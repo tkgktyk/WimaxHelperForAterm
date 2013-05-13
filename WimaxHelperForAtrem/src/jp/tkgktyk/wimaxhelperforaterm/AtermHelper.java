@@ -34,6 +34,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
@@ -322,7 +324,6 @@ public class AtermHelper {
 							HttpEntity entity = response.getEntity();
 							// Jsoup.parse closes InputStream after parsing
 							Document doc = Jsoup.parse(entity.getContent(), "euc-jp", "http://aterm.me/index.cgi");
-							MyLog.d(doc.title());
 							String product = MyFunc.normalize(doc.select(".product span").text());
 							MyLog.d(product);
 							_setRouter(product);
@@ -410,7 +411,6 @@ public class AtermHelper {
 		String address = _info.getBtAddress();
 		if (!BluetoothAdapter.checkBluetoothAddress(address)) {
 			MyLog.w("invalid bluetooth address: " + address);
-			MyFunc.showToast("Bluetoothアドレスが不正です： " + address);
 			return false;
 		}
 		Intent intent = new Intent(_context, WakeUpService.class);
@@ -513,29 +513,23 @@ public class AtermHelper {
 						_bt.disable();
 				}
 			})).start();
-
+			
 			this.stopSelf();
 		}
 	}
 	
 	/**
-	 * Check whether catch the router's radio.
+	 * Check whether wifi is active.
+	 * If check whether catch the router's radio, scanning time of wifi (5-15sec)
+	 * is not reasonable after wifi sleep.
 	 * @return
-	 * return true when catch the radio.
+	 * return true only when wifi is connected.
 	 */
 	public boolean isActive() {
-		WifiManager wm = (WifiManager)_context.getSystemService(Context.WIFI_SERVICE);
-		if (wm.getWifiState() == WifiManager.WIFI_STATE_ENABLED) {
-			// scan active WiFi access point.
-			wm.startScan();
-			List<ScanResult> results = wm.getScanResults();
-			Set<String> ssid = _info.getSsidSet();
-			for (ScanResult r : results) {
-				if (ssid.contains(r.SSID))
-					return true;
-			}
-		}
-		return false;
+		ConnectivityManager cm
+		= (ConnectivityManager)_context.getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo info = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+		return info.isConnected();
 	}
 	
 	/**
