@@ -63,7 +63,7 @@ public class BluetoothHelper {
 		try {
 			// create unpaired RFCOMM socket
 			BluetoothSocket socket = null;
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD_MR1) {
 				try {
 					Method m = device.getClass().getMethod("createInsecureRfcommSocket", new Class[] { int.class });
 					socket = (BluetoothSocket) m.invoke(device, 1);

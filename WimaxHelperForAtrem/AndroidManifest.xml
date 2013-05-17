@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="jp.tkgktyk.wimaxhelperforaterm"
+<manifest package="jp.tkgktyk.wimaxhelperforaterm"
     android:versionCode="7"
-    android:versionName="1.1.5" >
+    android:versionName="1.1.5" xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-sdk
         android:minSdkVersion="10"
@@ -17,7 +16,7 @@
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/AppTheme" android:debuggable="true" android:name=".my.MyApplication">
+        android:theme="@style/AppTheme" android:name=".my.MyApplication" android:debuggable="true">
         <activity
             android:name="jp.tkgktyk.wimaxhelperforaterm.MainActivity"
             android:label="@string/app_name"
