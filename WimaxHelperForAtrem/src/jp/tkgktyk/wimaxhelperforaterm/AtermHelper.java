@@ -336,6 +336,7 @@ public class AtermHelper {
 				_info = info;
 				MyLog.d("Aterm's information is updated.");
 			} else {
+				// keep _isDocking's value.
 				_info = new Info(_context);
 				MyLog.w("Information update is failed.");
 			}
