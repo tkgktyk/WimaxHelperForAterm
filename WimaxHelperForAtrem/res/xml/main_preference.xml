@@ -33,12 +33,12 @@
     	            android:summary="クイック設定Webのアドレス"
     	            android:title="Atermホスト名" />
     	        <EditTextPreference
-    	            android:defaultValue="0"
-    	            android:dialogTitle="ウェイト時間[msec]"
+    	            android:defaultValue="5000"
+    	            android:dialogTitle="スキャン時間[msec]"
     	            android:inputType="number"
-    	            android:key="@string/pref_key_screen_on_wait"
-    	            android:summary="画面ON後にコマンドを実行するまでのウェイト時間"
-    	            android:title="ウェイト時間" />
+    	            android:key="@string/pref_key_wifi_scan_wait"
+    	            android:summary="ルーターの電波をスキャンする時間"
+    	            android:title="スキャン時間" />
     	    </PreferenceCategory>
     	</PreferenceScreen>
     	
@@ -51,7 +51,7 @@
     	            android:summary="ルーターのBluetoothのMACアドレス"
     	            android:title="Bluetoothアドレス" />
     	        <EditTextPreference
-    	            android:defaultValue="4000"
+    	            android:defaultValue="5000"
     	            android:dialogTitle="タイムアウト[msec]"
     	            android:inputType="number"
     	            android:key="@string/pref_key_bt_connect_timeout"

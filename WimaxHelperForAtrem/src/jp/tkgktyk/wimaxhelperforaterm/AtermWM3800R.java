@@ -86,10 +86,10 @@ public class AtermWM3800R implements Router {
 					info.charging = v.contains("è[ìdíÜ");
 					if (info.charging) {
 						int start = v.indexOf('Å°');
-						info.setBattery((start != -1)? (v.lastIndexOf('Å°') - start + 1) * 10: 0);
+						info.battery = (start != -1)? (v.lastIndexOf('Å°') - start + 1) * 10: 0;
 					} else {
 						int start = v.indexOf('Åi');
-						info.setBattery(Integer.parseInt(v.substring(start + 1, v.indexOf('Åì'))));
+						info.battery = Integer.parseInt(v.substring(start + 1, v.indexOf('Åì')));
 					}
 					break;
 				case RSSI:
@@ -123,7 +123,6 @@ public class AtermWM3800R implements Router {
 				default:
 					// do nothing
 				}
-				info.save();
 			} catch (Exception e) {
 				MyLog.e("parse error: " + v + "@" + key.text());
 				MyLog.e(e.toString());

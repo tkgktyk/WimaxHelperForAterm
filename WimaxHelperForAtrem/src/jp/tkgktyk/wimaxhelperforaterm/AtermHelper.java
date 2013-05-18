@@ -3,10 +3,12 @@ package jp.tkgktyk.wimaxhelperforaterm;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import jp.tkgktyk.wimaxhelperforaterm.my.MyApplication;
 import jp.tkgktyk.wimaxhelperforaterm.my.MyFunc;
 import jp.tkgktyk.wimaxhelperforaterm.my.MyLog;
 
@@ -37,8 +39,6 @@ import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.net.wifi.ScanResult;
-import android.net.wifi.WifiManager;
 import android.os.IBinder;
 
 /**
@@ -59,52 +59,39 @@ public class AtermHelper {
 	 */
 	public static class Info implements Serializable {
 		private Context _context;
-		/** save flag used in save() function. set true when Bluetooth MAC address is changed. */
-		private boolean _needSave;
 
 		public String version = "";
 		public boolean updateNotified = false;
-		private int _battery = -1;
+		public int battery = -1;
 		public boolean charging = false;
 		public int rssi = -999;
 		public int cinr = -1;
-		private Set<String> _ssidSet;
+		private Set<String> _ssidSet = new HashSet<String>();
 		public boolean wanTogether = false;
 		public String btName = "";
-		private String _btAddress;
+		private String _btAddress = "";
 		public String status = "";
 		public int antenna = -1;
 		public List<String> ipAddress = new ArrayList<String>();
 		
 		/**
-		 * Load preferences. Default parameters of member is set in define statement.
+		 * Default parameters of member is set in define statement.
 		 * @param context
 		 */
 		public Info(Context context) {
 			_context = context;
-			_needSave = false;
+		}
+		
+		/**
+		 * Load preferences for initialization.
+		 */
+		public void loadPreference() {
 			_ssidSet = MyFunc.getSetPreference(R.string.pref_key_aterm_ssid);
 			_btAddress = MyFunc.getStringPreference(R.string.pref_key_bt_address);
 		}
 		
-		public boolean isValid() { return antenna >= 0; }
-		
-		/**
-		 * Make a text that represents the rest of battery.
-		 * @return
-		 * "%d%%" format. '+' is added when the battery is charging.
-		 */
-		public String getBatteryText() {
-			String text = String.format("%d%%", _battery);
-			return charging? text + "+": text;
-		}
-		
-		/**
-		 * Setter of battery.
-		 * @param battery
-		 */
-		public void setBattery(int battery) { _battery = battery; }
-		
+		public boolean isValid() { return (antenna >= 0) || (antenna <=6); }
+
 		/**
 		 * Getter of router's ssids
 		 * @return
@@ -131,20 +118,7 @@ public class AtermHelper {
 		 * Set MAC address.
 		 */
 		public void setBtAddress(String address) {
-			String newAddress = address.toUpperCase(Locale.US);
-			_needSave = !_btAddress.equals(newAddress);
-			_btAddress = newAddress;
-		}
-		
-		/**
-		 * Save router's information to myPreference if need.
-		 */
-		public void save() {
-			if (_needSave) {
-				MyFunc.setStringPreference(R.string.pref_key_bt_address, _btAddress);
-				MyFunc.setSetPreference(R.string.pref_key_aterm_ssid, _ssidSet);
-				_needSave = false;
-			}
+			_btAddress = address.toUpperCase(Locale.US);
 		}
 	}
 
@@ -241,11 +215,13 @@ public class AtermHelper {
 	private Context _context;
 	private Router _router;
 	private Info _info;
+	private boolean _isDocking;
 	
 	public AtermHelper(Context context) {
 		KEY_BT_ADDRESS = context.getString(R.string.pref_key_bt_address);
 		_context = context;
 		_info = new Info(context);
+		_info.loadPreference();
 		
 		_setRouter(MyFunc.getStringPreference(R.string.pref_key_aterm_product));
 		
@@ -300,6 +276,13 @@ public class AtermHelper {
 			break;
 		}
 	}
+	
+	/**
+	 * Check
+	 * @return
+	 * returns true if router is probably docking.
+	 */
+	public boolean isDocking() { return _isDocking; }
 
 	/**
 	 * update an Aterm information with HTTP. (executing on AsyncTask is recommended.)
@@ -343,9 +326,15 @@ public class AtermHelper {
 		} catch (IOException e) {
 			MyLog.e(e.toString());
 		} finally {
+			// update info object.
 			if (info != null) {
+				_isDocking = info.charging || (info.battery >= _info.battery);
+				if (!info.getBtAddress().equals(_info.getBtAddress())) {
+					MyFunc.setStringPreference(R.string.pref_key_bt_address, info.getBtAddress());
+					MyFunc.setSetPreference(R.string.pref_key_aterm_ssid, info.getSsidSet());
+				}
 				_info = info;
-				MyLog.v("Aterm's information is updated.");
+				MyLog.d("Aterm's information is updated.");
 			} else {
 				_info = new Info(_context);
 				MyLog.w("Information update is failed.");
@@ -425,7 +414,6 @@ public class AtermHelper {
 	 *
 	 */
 	public static class WakeUpService extends Service {
-		
 		private BluetoothHelper _bt;
 		private String _address;
 
@@ -461,10 +449,11 @@ public class AtermHelper {
 		public void onCreate() {
 			super.onCreate();
 			
-			MyLog.v("create wake up service.");
+			MyLog.d("create wake up service.");
 			
 			_bt = new BluetoothHelper();
-			IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+			IntentFilter filter = new IntentFilter();
+			filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
 			this.registerReceiver(_receiver, filter);
 		}
 		
@@ -472,14 +461,17 @@ public class AtermHelper {
 		public void onDestroy() {
 			super.onDestroy();
 			
-			MyLog.v("destroy wake up service.");
+			MyLog.d("destroy wake up service.");
 			
 			this.unregisterReceiver(_receiver);
 		}
 		
+		private AtermHelper _getAterm() { return ((MyApplication)this.getApplication()).getAterm(); }
+		
 		@Override
 		public int onStartCommand(Intent intent, int flags, int startId) {
 			_address = intent.getStringExtra(KEY_BT_ADDRESS);
+			
 			// if bluetooth is not enable, enable it and wait for BluetoothAdapter.STATE_ON.
 			if (!_bt.isEnabled()) {
 				(new Thread(new Runnable() {

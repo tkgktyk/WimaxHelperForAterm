@@ -71,13 +71,17 @@ public class MyApplication extends Application {
 			// change the method of checking whether the router is active.
 			// in connection with it, need to change the default value of screen_on_wait.
 			// so reset screen_on_wait preference.
-			MyFunc.removePreference(R.string.pref_key_screen_on_wait);
+//			MyFunc.removePreference(R.string.pref_key_screen_on_wait);
 		}
 		if (last.toInt() < new Version("1.1.5").toInt()) {
 			// debugged GT-N7000 4.1.2.
 			// change default value.
-			MyFunc.removePreference(R.string.pref_key_screen_on_wait);
+//			MyFunc.removePreference(R.string.pref_key_screen_on_wait);
 			MyFunc.removePreference(R.string.pref_key_bt_connect_timeout);
+		}
+		if (last.toInt() < new Version("1.1.6").toInt()) {
+			// change default value.
+			MyFunc.removePreference(R.string.pref_key_bt_connect_timeout); // 5000msec
 		}
 	}
 	

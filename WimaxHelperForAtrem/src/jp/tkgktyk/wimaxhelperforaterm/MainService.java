@@ -1,5 +1,6 @@
 package jp.tkgktyk.wimaxhelperforaterm;
 
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -14,6 +15,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.NetworkInfo;
+import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.os.IBinder;
 
@@ -48,16 +50,19 @@ public class MainService extends Service {
 				_showNotification();
 			} else if (action.equals(Intent.ACTION_SCREEN_ON)) {
 				_wakeUp();
+			} else if (action.equals(Intent.ACTION_SCREEN_OFF)) {
+				if (_getAterm().isActive())
+					_getAterm().updateInfo();
 			} else if (action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
 				// wifi event only
 				NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
 				switch (info.getState()) {
 				case CONNECTED:
-					MyLog.i("wifi is connected.");
+					MyLog.d("wifi is connected.");
 					_getAterm().updateInfo();
 					break;
 				case DISCONNECTED:
-					MyLog.i("wifi is disconnected.");
+					MyLog.d("wifi is disconnected.");
 					_showPrepareNotification();
 					break;
 				}
@@ -152,7 +157,9 @@ public class MainService extends Service {
 	private void _showNotification() {
 		AtermHelper.Info info = _getAterm().getInfo();
 		if (info.isValid()) {
-			String content = String.format("電波: %d本、バッテリー: %s", info.antenna, info.getBatteryText());
+			String content = String.format("電波: %d本、バッテリー: %d%%（", info.antenna, info.battery);
+			content += (info.charging)? "充電中": "Docked?";
+			content += "）";
 			_showNotification(content, info.antenna);
 		} else {
 			_showUnsupportedNotification();
@@ -181,19 +188,33 @@ public class MainService extends Service {
 	 */
 	private void _wakeUp() {
 		// After a wait, check the WiFi connection by thread.;
-		long delay = MyFunc.getLongPreference(R.string.pref_key_screen_on_wait);
-		Timer timer = new Timer(true);
-		timer.schedule(new TimerTask() {
-			@Override
-			public void run() {
-				AtermHelper aterm = _getAterm();
-				if (!aterm.isActive()) {
+		AtermHelper aterm = _getAterm();
+		if (aterm.isActive()) {
+			aterm.updateInfo();
+		} else if (!aterm.isDocking()) {
+			_showWakeUpNotification();
+			_getAterm().wakeUp();
+		} else {
+			long delay = MyFunc.getLongPreference(R.string.pref_key_wifi_scan_wait);
+			Timer timer = new Timer(true);
+			((WifiManager)getSystemService(WIFI_SERVICE)).startScan();
+			timer.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					MyLog.d("WiFi scan end.");
+					WifiManager wm = (WifiManager)getSystemService(WIFI_SERVICE);
+					Set<String> ssids = _getAterm().getInfo().getSsidSet();
+					for (ScanResult r : wm.getScanResults()) {
+						if (ssids.contains(r.SSID)) {
+							MyLog.d("catch the router's radio.");
+							return;
+						}
+					}
+					MyLog.d("router is not found.");
 					_showWakeUpNotification();
-					aterm.wakeUp();
-				} else {
-					aterm.updateInfo();
+					_getAterm().wakeUp();
 				}
-			}
-		}, delay);
+			}, delay);
+		}
 	}
 }

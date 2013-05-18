@@ -23,6 +23,6 @@
     <string name="pref_key_aterm_product">pref_key_aterm_product</string>
     <string name="pref_key_aterm_ssid">pref_key_aterm_ssid</string>
     <string name="pref_key_bt_address">pref_key_bt_address</string>
-    <string name="pref_key_screen_on_wait">pref_key_screen_on_wait</string>
+    <string name="pref_key_wifi_scan_wait">pref_key_wifi_scan_wait</string>
     <string name="pref_key_bt_connect_timeout">pref_key_bt_connect_timeout</string>
 </resources>

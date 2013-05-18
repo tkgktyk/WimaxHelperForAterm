@@ -101,7 +101,7 @@ public class BluetoothHelper {
 		} catch (IOException e) {
 			// always reaches here
 		} finally {
-			MyLog.v("tryed wake up.");
+			MyLog.d("tryed wake up.");
 		}
 	}
 
