@@ -18,12 +18,9 @@ import android.os.Build;
 public class BluetoothHelper {
 
 	private final BluetoothAdapter _adapter;
-	/** Does this class need to control enable of bluetooth? */
-	private boolean _needsEnableControl;
 	
 	public BluetoothHelper() {
 		_adapter = BluetoothAdapter.getDefaultAdapter();
-		_needsEnableControl = hasDevice()? !_adapter.isEnabled(): false;
 	}
 	
 	/**
@@ -32,7 +29,6 @@ public class BluetoothHelper {
 	public void enable() {
 		if (!isEnabled()) {
 			MyLog.i("enable Bluetooth.");
-			_needsEnableControl = true;
 			_adapter.enable(); // need a permission BLUETOOTH_ADMIN
 		}
 	}
@@ -116,10 +112,5 @@ public class BluetoothHelper {
 	 * Return true if Android has bluetooth devices.
 	 */
 	public boolean hasDevice() { return (_adapter != null); }
-	
-	/**
-	 * @return
-	 * Return true if BluetoothHelper needs to control of bluetooth enable.
-	 */
-	public boolean needsEnableControl() { return _needsEnableControl; }
+
 }
