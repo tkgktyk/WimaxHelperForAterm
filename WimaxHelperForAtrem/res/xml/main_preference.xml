@@ -33,12 +33,19 @@
     	            android:summary="クイック設定Webのアドレス"
     	            android:title="Atermホスト名" />
     	        <EditTextPreference
-    	            android:defaultValue="5000"
+    	            android:defaultValue="10000"
     	            android:dialogTitle="スキャン時間[msec]"
     	            android:inputType="number"
     	            android:key="@string/pref_key_wifi_scan_wait"
     	            android:summary="ルーターの電波をスキャンする時間"
     	            android:title="スキャン時間" />
+    	        <EditTextPreference
+    	            android:defaultValue="5000"
+    	            android:dialogTitle="タイムアウト[msec]"
+    	            android:inputType="number"
+    	            android:key="@string/pref_key_bt_connect_timeout"
+    	            android:summary="リモート起動のタイムアウト時間"
+    	            android:title="タイムアウト" />
     	    </PreferenceCategory>
     	</PreferenceScreen>
     	
@@ -50,13 +57,6 @@
     	            android:key="@string/pref_key_bt_address"
     	            android:summary="ルーターのBluetoothのMACアドレス"
     	            android:title="Bluetoothアドレス" />
-    	        <EditTextPreference
-    	            android:defaultValue="5000"
-    	            android:dialogTitle="タイムアウト[msec]"
-    	            android:inputType="number"
-    	            android:key="@string/pref_key_bt_connect_timeout"
-    	            android:summary="リモート起動のタイムアウト時間"
-    	            android:title="タイムアウト" />
     	    </PreferenceCategory>
     	    <PreferenceCategory android:title="サービス" >
     	        <jp.tkgktyk.wimaxhelperforaterm.YesNoPreference

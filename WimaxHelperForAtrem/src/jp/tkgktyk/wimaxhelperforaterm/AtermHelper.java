@@ -58,11 +58,13 @@ public class AtermHelper {
 	 * This class uses default shared preferences to save some information.
 	 */
 	public static class Info implements Serializable {
+		public static int INVALID_BATTERY_VALUE = -1;
+		
 		private Context _context;
 
 		public String version = "";
 		public boolean updateNotified = false;
-		public int battery = -1;
+		public int battery = INVALID_BATTERY_VALUE;
 		public boolean charging = false;
 		public int rssi = -999;
 		public int cinr = -1;
@@ -90,7 +92,7 @@ public class AtermHelper {
 			_btAddress = MyFunc.getStringPreference(R.string.pref_key_bt_address);
 		}
 		
-		public boolean isValid() { return (antenna >= 0) || (antenna <=6); }
+		public boolean isValid() { return (battery != INVALID_BATTERY_VALUE); }
 
 		/**
 		 * Getter of router's ssids
@@ -149,7 +151,7 @@ public class AtermHelper {
 		public String getRebootCommand();
 		/**
 		 * @return
-		 * Translate to Product enum represents this router's product name.
+		 * Translate to Product that represents this router's product name.
 		 */
 		public Product toProduct();
 	}
@@ -216,12 +218,15 @@ public class AtermHelper {
 	private Router _router;
 	private Info _info;
 	private boolean _isDocking;
+	private Info _lastValidInfo;
 	
 	public AtermHelper(Context context) {
 		KEY_BT_ADDRESS = context.getString(R.string.pref_key_bt_address);
 		_context = context;
 		_info = new Info(context);
 		_info.loadPreference();
+		_isDocking = false;
+		_lastValidInfo = new Info(context);
 		
 		_setRouter(MyFunc.getStringPreference(R.string.pref_key_aterm_product));
 		
@@ -290,7 +295,7 @@ public class AtermHelper {
 	 * If any error occurred, information is replaced empty.
 	 * e.g. HTTP connection error, information parsing error and so on.
 	 */
-	public void updateInfoAsync() {
+	public void updateInfoForAsync() {
 		Info info = null;
 		DefaultHttpClient httpClient = _newClient();
 		// access to Aterm information page
@@ -328,10 +333,13 @@ public class AtermHelper {
 		} finally {
 			// update info object.
 			if (info != null) {
-				_isDocking = info.charging || (info.battery >= _info.battery);
-				if (!info.getBtAddress().equals(_info.getBtAddress())) {
-					MyFunc.setStringPreference(R.string.pref_key_bt_address, info.getBtAddress());
-					MyFunc.setSetPreference(R.string.pref_key_aterm_ssid, info.getSsidSet());
+				if (info.isValid()) {
+					_isDocking = info.charging || (info.battery >= _lastValidInfo.battery);
+					if (!info.getBtAddress().equals(_lastValidInfo.getBtAddress())) {
+						MyFunc.setStringPreference(R.string.pref_key_bt_address, info.getBtAddress());
+						MyFunc.setSetPreference(R.string.pref_key_aterm_ssid, info.getSsidSet());
+					}
+					_lastValidInfo = info;
 				}
 				_info = info;
 				MyLog.d("Aterm's information is updated.");
@@ -351,7 +359,7 @@ public class AtermHelper {
 		(new Thread(new Runnable() {
 			@Override
 			public void run() {
-				updateInfoAsync();
+				updateInfoForAsync();
 				Intent broadcast = new Intent();
 				broadcast.setAction(ACTION_GET_INFO);
 				_context.sendBroadcast(broadcast);
@@ -417,6 +425,7 @@ public class AtermHelper {
 	public static class WakeUpService extends Service {
 		private BluetoothHelper _bt;
 		private String _address;
+		private boolean _needsEnableControl;
 
 		@Override
 		public IBinder onBind(Intent intent) {
@@ -466,20 +475,20 @@ public class AtermHelper {
 			
 			this.unregisterReceiver(_receiver);
 		}
-		
-		private AtermHelper _getAterm() { return ((MyApplication)this.getApplication()).getAterm(); }
-		
+	
 		@Override
 		public int onStartCommand(Intent intent, int flags, int startId) {
 			_address = intent.getStringExtra(KEY_BT_ADDRESS);
 			
 			// if bluetooth is not enable, enable it and wait for BluetoothAdapter.STATE_ON.
 			if (!_bt.isEnabled()) {
+				_needsEnableControl = true;
 				(new Thread(new Runnable() {
 					@Override
 					public void run() { _bt.enable(); }
 				})).start();
 			} else {
+				_needsEnableControl = false;
 				_wakeUp();
 			}
 			
@@ -502,7 +511,7 @@ public class AtermHelper {
 							);
 					
 					// after treatment
-					if (_bt.needsEnableControl())
+					if (_needsEnableControl)
 						_bt.disable();
 				}
 			})).start();

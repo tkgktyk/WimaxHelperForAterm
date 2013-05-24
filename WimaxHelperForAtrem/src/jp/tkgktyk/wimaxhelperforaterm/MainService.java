@@ -134,6 +134,10 @@ public class MainService extends Service {
 			icon = R.drawable.ic_stat_disconnected;
 		else
 			icon = R.drawable.ic_stat_unknown;
+		if (_getAterm().getInfo().charging)
+			content += "（充電中）";
+		else if (_getAterm().isDocking())
+			content += "（充電中？）";
 		Notification notification = new Notification(
 				icon,
 				content,
@@ -157,9 +161,7 @@ public class MainService extends Service {
 	private void _showNotification() {
 		AtermHelper.Info info = _getAterm().getInfo();
 		if (info.isValid()) {
-			String content = String.format("電波: %d本、バッテリー: %d%%（", info.antenna, info.battery);
-			content += (info.charging)? "充電中": "Docked?";
-			content += "）";
+			String content = String.format("電波: %d本、バッテリー: %d%%", info.antenna, info.battery);
 			_showNotification(content, info.antenna);
 		} else {
 			_showUnsupportedNotification();
