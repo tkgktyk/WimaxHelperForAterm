@@ -9,8 +9,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import android.content.Context;
-
 /**
  * A Router class for Aterm WM3800R.
  */
@@ -60,8 +58,8 @@ public class AtermWM3800R implements Router {
 	}
 
 	@Override
-	public Info parseDocument(Document doc, Context context) {
-		Info info = new AtermHelper.Info(context);
+	public Info parseDocument(Document doc) {
+		Info info = new AtermHelper.Info();
 		Elements trs = doc.select(".table_common .small_item_info_tr");
 		for (Element tr : trs) {
 			Element key;
