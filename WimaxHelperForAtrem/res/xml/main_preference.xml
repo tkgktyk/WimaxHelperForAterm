@@ -40,7 +40,7 @@
     	            android:summary="ルーターの電波をスキャンする時間"
     	            android:title="スキャン時間" />
     	        <EditTextPreference
-    	            android:defaultValue="5000"
+    	            android:defaultValue="10000"
     	            android:dialogTitle="タイムアウト[msec]"
     	            android:inputType="number"
     	            android:key="@string/pref_key_bt_connect_timeout"

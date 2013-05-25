@@ -11,6 +11,7 @@ import android.content.pm.PackageManager.NameNotFoundException;
  * An application class provides AtermHelper object to activities and services.
  */
 public class MyApplication extends Application {
+	
 	private AtermHelper _aterm;
 	
 	@Override
@@ -23,6 +24,8 @@ public class MyApplication extends Application {
 	
 	private void _checkVersion() {
 		class Version {
+			public static final int BASE = 1000;
+
 			int major = 0;
 			int minor = 0;
 			int revision = 0;
@@ -41,7 +44,11 @@ public class MyApplication extends Application {
 			}
 			
 			public int toInt() {
-				return major*100*100 + minor*100 + revision;
+				return major*BASE*BASE + minor*BASE + revision;
+			}
+			
+			public boolean isNewerThan(Version v) {
+				return toInt() > v.toInt();
 			}
 		}
 		
@@ -63,7 +70,7 @@ public class MyApplication extends Application {
 		Version current = new Version(version);
 		
 		// care of changing version
-		if (last.toInt() < new Version("1.1.4").toInt()) {
+		if (new Version("1.1.4").isNewerThan(last)) {
 			// introduce preferences of router's SSID and versionName.
 			// SSID is saved only when Bluetooth MAC address is changed.
 			// so remove Bluetooth MAC address on preference to save SSID.
@@ -73,15 +80,19 @@ public class MyApplication extends Application {
 			// so reset screen_on_wait preference.
 //			MyFunc.removePreference(R.string.pref_key_screen_on_wait);
 		}
-		if (last.toInt() < new Version("1.1.5").toInt()) {
+		if (new Version("1.1.5").isNewerThan(last)) {
 			// debugged GT-N7000 4.1.2.
 			// change default value.
 //			MyFunc.removePreference(R.string.pref_key_screen_on_wait);
 			MyFunc.removePreference(R.string.pref_key_bt_connect_timeout);
 		}
-		if (last.toInt() < new Version("1.1.6").toInt()) {
+		if (new Version("1.1.6").isNewerThan(last)) {
 			// change default value.
 			MyFunc.removePreference(R.string.pref_key_bt_connect_timeout); // 5000msec
+		}
+		if (new Version("1.2").isNewerThan(last)) {
+			// change default value.
+			MyFunc.removePreference(R.string.pref_key_bt_connect_timeout); // 10000msec
 		}
 	}
 	

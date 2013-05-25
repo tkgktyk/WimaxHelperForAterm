@@ -51,7 +51,7 @@ public class MainService extends Service {
 			} else if (action.equals(Intent.ACTION_SCREEN_ON)) {
 				_wakeUp();
 			} else if (action.equals(Intent.ACTION_SCREEN_OFF)) {
-				if (_getAterm().isActive())
+				if (_getAterm().isWifiConnected())
 					_getAterm().updateInfo();
 			} else if (action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
 				// wifi event only
@@ -59,7 +59,7 @@ public class MainService extends Service {
 				switch (info.getState()) {
 				case CONNECTED:
 					MyLog.d("wifi is connected.");
-					_getAterm().updateInfo();
+					_getAterm().forceToUpdateInfo();
 					break;
 				case DISCONNECTED:
 					MyLog.d("wifi is disconnected.");
@@ -136,7 +136,7 @@ public class MainService extends Service {
 			icon = R.drawable.ic_stat_unknown;
 		if (_getAterm().getInfo().charging)
 			content += "（充電中）";
-		else if (_getAterm().isDocking())
+		else if (_getAterm().isRouterDocked())
 			content += "（充電中？）";
 		Notification notification = new Notification(
 				icon,
@@ -191,32 +191,36 @@ public class MainService extends Service {
 	private void _wakeUp() {
 		// After a wait, check the WiFi connection by thread.;
 		AtermHelper aterm = _getAterm();
-		if (aterm.isActive()) {
+		if (aterm.isWifiConnected()) {
 			aterm.updateInfo();
-		} else if (!aterm.isDocking()) {
+		} else if (!aterm.isRouterDocked()) {
 			_showWakeUpNotification();
 			_getAterm().wakeUp();
 		} else {
 			long delay = MyFunc.getLongPreference(R.string.pref_key_wifi_scan_wait);
 			Timer timer = new Timer(true);
-			((WifiManager)getSystemService(WIFI_SERVICE)).startScan();
-			timer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					MyLog.d("WiFi scan end.");
-					WifiManager wm = (WifiManager)getSystemService(WIFI_SERVICE);
-					Set<String> ssids = _getAterm().getInfo().getSsidSet();
-					for (ScanResult r : wm.getScanResults()) {
-						if (ssids.contains(r.SSID)) {
-							MyLog.d("catch the router's radio.");
-							return;
+			final WifiManager wm = (WifiManager)getSystemService(WIFI_SERVICE);
+			if (wm.isWifiEnabled()) {
+				((WifiManager)getSystemService(WIFI_SERVICE)).startScan();
+				timer.schedule(new TimerTask() {
+					@Override
+					public void run() {
+						MyLog.d("WiFi scan end.");
+						if (wm.isWifiEnabled()) {
+							Set<String> ssids = _getAterm().getInfo().getSsidSet();
+							for (ScanResult r : wm.getScanResults()) {
+								if (ssids.contains(r.SSID)) {
+									MyLog.d("catch the router's radio.");
+									return;
+								}
+							}
 						}
+						MyLog.d("router is not found.");
+						_showWakeUpNotification();
+						_getAterm().wakeUp();
 					}
-					MyLog.d("router is not found.");
-					_showWakeUpNotification();
-					_getAterm().wakeUp();
-				}
-			}, delay);
+				}, delay);
+			}
 		}
 	}
 }

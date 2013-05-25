@@ -3,12 +3,12 @@ package jp.tkgktyk.wimaxhelperforaterm;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
-import jp.tkgktyk.wimaxhelperforaterm.my.MyApplication;
 import jp.tkgktyk.wimaxhelperforaterm.my.MyFunc;
 import jp.tkgktyk.wimaxhelperforaterm.my.MyLog;
 
@@ -60,8 +60,7 @@ public class AtermHelper {
 	public static class Info implements Serializable {
 		public static int INVALID_BATTERY_VALUE = -1;
 		
-		private Context _context;
-
+		public long timeInMillis = Calendar.getInstance().getTimeInMillis();
 		public String version = "";
 		public boolean updateNotified = false;
 		public int battery = INVALID_BATTERY_VALUE;
@@ -80,8 +79,7 @@ public class AtermHelper {
 		 * Default parameters of member is set in define statement.
 		 * @param context
 		 */
-		public Info(Context context) {
-			_context = context;
+		public Info() {
 		}
 		
 		/**
@@ -93,6 +91,16 @@ public class AtermHelper {
 		}
 		
 		public boolean isValid() { return (battery != INVALID_BATTERY_VALUE); }
+		
+		/**
+		 * check whether this is fresh.
+		 * @return
+		 * returns true when 5 minutes pass or invalid.
+		 */
+		public boolean isOld() {
+			return !isValid() ||
+					(Calendar.getInstance().getTimeInMillis() - timeInMillis) >= (5*60*1000);
+		}
 
 		/**
 		 * Getter of router's ssids
@@ -133,12 +141,10 @@ public class AtermHelper {
 		 * Parse router information page(HTML) with {@link Document}.
 		 * @param doc
 		 * Document of Jsoup liked to router's information.
-		 * @param context
-		 * Need to access default shared preferences.
 		 * @return
 		 * a new information. Null is returned only when it fails.
 		 */
-		public Info parseDocument(Document doc, Context context);
+		public Info parseDocument(Document doc);
 		/**
 		 * @return
 		 * Router's standby command.
@@ -162,9 +168,9 @@ public class AtermHelper {
 	 */
 	protected class AtermUnsupported implements Router {
 		@Override
-		public Info parseDocument(Document doc, Context context) {
+		public Info parseDocument(Document doc) {
 			// return empty info
-			return new Info(context);
+			return new Info();
 		}
 
 		@Override
@@ -217,16 +223,16 @@ public class AtermHelper {
 	private Context _context;
 	private Router _router;
 	private Info _info;
-	private boolean _isDocking;
+	private boolean _isRouterDocked;
 	private Info _lastValidInfo;
 	
 	public AtermHelper(Context context) {
 		KEY_BT_ADDRESS = context.getString(R.string.pref_key_bt_address);
 		_context = context;
-		_info = new Info(context);
+		_info = new Info();
 		_info.loadPreference();
-		_isDocking = false;
-		_lastValidInfo = new Info(context);
+		_isRouterDocked = false;
+		_lastValidInfo = new Info();
 		
 		_setRouter(MyFunc.getStringPreference(R.string.pref_key_aterm_product));
 		
@@ -287,7 +293,7 @@ public class AtermHelper {
 	 * @return
 	 * returns true if router is probably docking.
 	 */
-	public boolean isDocking() { return _isDocking; }
+	public boolean isRouterDocked() { return _isRouterDocked; }
 
 	/**
 	 * update an Aterm information with HTTP. (executing on AsyncTask is recommended.)
@@ -315,7 +321,7 @@ public class AtermHelper {
 							String product = MyFunc.normalize(doc.select(".product span").text());
 							MyLog.d(product);
 							_setRouter(product);
-							info = _router.parseDocument(doc, _context);
+							info = _router.parseDocument(doc);
 						} catch (IOException e) {
 							e.printStackTrace();
 						} finally {
@@ -334,7 +340,13 @@ public class AtermHelper {
 			// update info object.
 			if (info != null) {
 				if (info.isValid()) {
-					_isDocking = info.charging || (info.battery >= _lastValidInfo.battery);
+					if (info.charging) {
+						_isRouterDocked = true;
+					} else if (info.battery > _lastValidInfo.battery) {
+						_isRouterDocked = true;
+					} else if (_lastValidInfo.isOld()){
+						_isRouterDocked = (info.battery == _lastValidInfo.battery);
+					}
 					if (!info.getBtAddress().equals(_lastValidInfo.getBtAddress())) {
 						MyFunc.setStringPreference(R.string.pref_key_bt_address, info.getBtAddress());
 						MyFunc.setSetPreference(R.string.pref_key_aterm_ssid, info.getSsidSet());
@@ -344,8 +356,8 @@ public class AtermHelper {
 				_info = info;
 				MyLog.d("Aterm's information is updated.");
 			} else {
-				// keep _isDocking's value.
-				_info = new Info(_context);
+				// keep _isRouterDocked's value.
+				_info = new Info();
 				MyLog.w("Information update is failed.");
 			}
 			httpClient.getConnectionManager().shutdown();
@@ -353,9 +365,17 @@ public class AtermHelper {
 	}
 	
 	/**
-	 * Start an update information thread implemented by {@link #updateInfoAsync()}.
+	 * perform {@link #forceToUpdateInfo()}.
 	 */
 	public void updateInfo() {
+		if (_lastValidInfo.isOld())
+			forceToUpdateInfo();
+	}
+
+	/**
+	 * Start an update information thread implemented by {@link #updateInfoAsync()}.
+	 */
+	public void forceToUpdateInfo() {
 		(new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -521,13 +541,13 @@ public class AtermHelper {
 	}
 	
 	/**
-	 * Check whether wifi is active.
+	 * Check whether wifi is connected.
 	 * If check whether catch the router's radio, scanning time of wifi (5-15sec)
 	 * is not reasonable after wifi sleep.
 	 * @return
 	 * return true only when wifi is connected.
 	 */
-	public boolean isActive() {
+	public boolean isWifiConnected() {
 		ConnectivityManager cm
 		= (ConnectivityManager)_context.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo info = cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
