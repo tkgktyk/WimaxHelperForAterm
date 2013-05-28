@@ -95,11 +95,11 @@ public class AtermHelper {
 		/**
 		 * check whether this is fresh.
 		 * @return
-		 * returns true when 5 minutes pass or invalid.
+		 * returns true when 10 minutes pass or invalid.
 		 */
 		public boolean isOld() {
 			return !isValid() ||
-					(Calendar.getInstance().getTimeInMillis() - timeInMillis) >= (5*60*1000);
+					(Calendar.getInstance().getTimeInMillis() - timeInMillis) >= (10*60*1000);
 		}
 
 		/**
@@ -434,6 +434,10 @@ public class AtermHelper {
 		Intent intent = new Intent(_context, WakeUpService.class);
 		intent.putExtra(KEY_BT_ADDRESS, address);
 		_context.startService(intent);
+		
+		// reset _isRouterDocked and _lastValidInfo
+		_isRouterDocked = false;
+		_lastValidInfo = new Info();
 		
 		return true;
 	}
