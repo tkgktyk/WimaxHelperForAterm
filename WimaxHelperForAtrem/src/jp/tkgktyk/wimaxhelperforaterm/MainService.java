@@ -51,6 +51,7 @@ public class MainService extends Service {
 			} else if (action.equals(Intent.ACTION_SCREEN_ON)) {
 				_wakeUp();
 			} else if (action.equals(Intent.ACTION_SCREEN_OFF)) {
+				// TODO: execute updateInfo() by Timer
 				if (_getAterm().isWifiConnected())
 					_getAterm().updateInfo();
 			} else if (action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
