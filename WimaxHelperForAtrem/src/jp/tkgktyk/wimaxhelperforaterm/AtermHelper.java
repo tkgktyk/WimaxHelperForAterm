@@ -58,7 +58,7 @@ public class AtermHelper {
 	 * This class uses default shared preferences to save some information.
 	 */
 	public static class Info implements Serializable {
-		public static int INVALID_BATTERY_VALUE = -1;
+		public static int INVALID_BATTERY_VALUE = 999;
 		
 		public long timeInMillis = Calendar.getInstance().getTimeInMillis();
 		public String version = "";
@@ -437,7 +437,7 @@ public class AtermHelper {
 		
 		// reset _isRouterDocked and _lastValidInfo
 		_isRouterDocked = false;
-		_lastValidInfo = new Info();
+		_lastValidInfo.battery = Info.INVALID_BATTERY_VALUE;
 		
 		return true;
 	}
