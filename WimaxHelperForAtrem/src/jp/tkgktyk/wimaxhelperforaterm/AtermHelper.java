@@ -4,9 +4,11 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import jp.tkgktyk.wimaxhelperforaterm.my.MyFunc;
@@ -15,20 +17,26 @@ import jp.tkgktyk.wimaxhelperforaterm.my.MyLog;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
+import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.Credentials;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.params.HttpClientParams;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.params.HttpProtocolParams;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
@@ -47,11 +55,49 @@ import android.os.IBinder;
  * A bluetooth MAC address is also saved to it by internal Info class.
  */
 public class AtermHelper {
-    // Default connection and socket timeout of 60 seconds.  Tweak to taste.
-    private static final int SOCKET_OPERATION_TIMEOUT = 60 * 1000;
 
     public static final String ACTION_GET_INFO = "ACTION_GET_INFO";
 	private static String KEY_BT_ADDRESS = "";
+	
+	/**
+	 * A HTTP client class for accessing to AtermRouter.
+	 */
+	private static class HttpClient extends DefaultHttpClient {
+	    // Default connection and socket timeout of 60 seconds.  Tweak to taste.
+	    private static final int SOCKET_OPERATION_TIMEOUT = 60 * 1000;
+	    
+		public HttpClient(String hostName) {
+			// create HTTP client has above params with basic authentication
+			super(_makeDefaultParams());
+			Credentials credentials = new UsernamePasswordCredentials(
+					Const.ATERM_BASIC_USERNAME,
+					Const.ATERM_BASIC_PASSWORD
+					);
+			AuthScope scope = new AuthScope(hostName, Const.ATERM_PORT);
+			this.getCredentialsProvider().setCredentials(scope, credentials);
+		}
+		
+		private static HttpParams _makeDefaultParams() {
+			HttpParams params = new BasicHttpParams();
+
+			// Turn off stale checking.  Our connections break all the time anyway,
+			// and it's not worth it to pay the penalty of checking every time.
+			HttpConnectionParams.setStaleCheckingEnabled(params, false);
+
+			HttpConnectionParams.setConnectionTimeout(params, SOCKET_OPERATION_TIMEOUT);
+			HttpConnectionParams.setSoTimeout(params, SOCKET_OPERATION_TIMEOUT);
+			HttpConnectionParams.setSocketBufferSize(params, 8192);
+
+			// Don't handle redirects -- return them to the caller.  Our code
+			// often wants to re-POST after a redirect, which we must do ourselves.
+			HttpClientParams.setRedirecting(params, false);
+
+			// Set the specified user agent and register standard protocols.
+			HttpProtocolParams.setUserAgent(params, Const.USER_AGENT);
+
+			return params;
+		}
+	}
 	
 	/**
 	 * An interface(not java's interface) to access to Aterm's information.
@@ -136,7 +182,7 @@ public class AtermHelper {
 	 * An interface to talk with WiMAX router.
 	 * 
 	 */
-	public interface Router {
+	public static abstract class Router {
 		/**
 		 * Parse router information page(HTML) with {@link Document}.
 		 * @param doc
@@ -144,29 +190,29 @@ public class AtermHelper {
 		 * @return
 		 * a new information. Null is returned only when it fails.
 		 */
-		public Info parseDocument(Document doc);
+		public abstract Info parseDocument(Document doc);
 		/**
 		 * @return
 		 * Router's standby command.
 		 */
-		public String getStandbyCommand();
+		public String getStandbyCommand() { return Const.ATERM_CMD_STANDBY_BT; }
 		/**
 		 * @return
 		 * Router's reboot command.
 		 */
-		public String getRebootCommand();
+		public String getRebootCommand() { return Const.ATERM_CMD_REBOOT; }
 		/**
 		 * @return
 		 * Translate to Product that represents this router's product name.
 		 */
-		public Product toProduct();
+		public abstract Product toProduct();
 	}
 	
 	/**
 	 * An extra class of Router.
 	 * This represents that this application is unsupported the router.
 	 */
-	protected class AtermUnsupported implements Router {
+	protected class AtermUnsupported extends Router {
 		@Override
 		public Info parseDocument(Document doc) {
 			// return empty info
@@ -197,7 +243,7 @@ public class AtermHelper {
 		 * Product name is normalized by {@link MyFunc#normalize(String)}
 		 */
 		WM3800R("Aterm WM3800R"),
-		UNSUPPORTED("");
+		UNSUPPORTED("–¢‘Î‰ž");
 
 	    private final String _name;
 
@@ -295,131 +341,9 @@ public class AtermHelper {
 	 */
 	public boolean isRouterDocked() { return _isRouterDocked; }
 
-	/**
-	 * update an Aterm information with HTTP. (executing on AsyncTask is recommended.)
-	 * if connecting to router is succeeded, a new object 'Info' is stored a router's information.
-	 * If any error occurred, information is replaced empty.
-	 * e.g. HTTP connection error, information parsing error and so on.
-	 */
-	public void updateInfoForAsync() {
-		Info info = null;
-		DefaultHttpClient httpClient = _newClient();
-		// access to Aterm information page
-		try {
-			HttpGet request = new HttpGet(_makeCommand(Const.ATERM_CMD_GET_INFO));
-			info = httpClient.execute(request, new ResponseHandler<Info>(){
-				@Override
-				public Info handleResponse(HttpResponse response)
-						throws ClientProtocolException, IOException {
-					Info info = null;
-					switch (response.getStatusLine().getStatusCode()) {
-					case HttpStatus.SC_OK:
-						try { // get connection and parse document.
-							HttpEntity entity = response.getEntity();
-							// Jsoup.parse closes InputStream after parsing
-							Document doc = Jsoup.parse(entity.getContent(), "euc-jp", "http://aterm.me/index.cgi");
-							String product = MyFunc.normalize(doc.select(".product span").text());
-							MyLog.d(product);
-							_setRouter(product);
-							info = _router.parseDocument(doc);
-						} catch (IOException e) {
-							e.printStackTrace();
-						} finally {
-							// Jsoup.parse closes InputStream after parsing
-							// so calling close() is not need. (should not close by myself)
-//							if (entity != null)
-//								entity.getContent().close();
-						}
-					}
-					return info;
-				}
-			});
-		} catch (IOException e) {
-			MyLog.e(e.toString());
-		} finally {
-			// update info object.
-			if (info != null) {
-				if (info.isValid()) {
-					if (info.charging) {
-						_isRouterDocked = true;
-					} else if (info.battery > _lastValidInfo.battery) {
-						_isRouterDocked = true;
-					} else if (_lastValidInfo.isOld()){
-						_isRouterDocked = (info.battery == _lastValidInfo.battery);
-					}
-					if (!info.getBtAddress().equals(_lastValidInfo.getBtAddress())) {
-						MyFunc.setStringPreference(R.string.pref_key_bt_address, info.getBtAddress());
-						MyFunc.setSetPreference(R.string.pref_key_aterm_ssid, info.getSsidSet());
-					}
-					_lastValidInfo = info;
-				}
-				_info = info;
-				MyLog.d("Aterm's information is updated.");
-			} else {
-				// keep _isRouterDocked's value.
-				_info = new Info();
-				MyLog.w("Information update is failed.");
-			}
-			httpClient.getConnectionManager().shutdown();
-		}
-	}
-	
-	/**
-	 * perform {@link #forceToUpdateInfo()}.
-	 */
-	public void updateInfo() {
-		if (_lastValidInfo.isOld())
-			forceToUpdateInfo();
-	}
-
-	/**
-	 * Start an update information thread implemented by {@link #updateInfoAsync()}.
-	 */
-	public void forceToUpdateInfo() {
-		(new Thread(new Runnable() {
-			@Override
-			public void run() {
-				updateInfoForAsync();
-				Intent broadcast = new Intent();
-				broadcast.setAction(ACTION_GET_INFO);
-				_context.sendBroadcast(broadcast);
-			}
-		})).start();
-	}
-	
 	/** Getter of Info */
 	public Info getInfo() { return _info; }
 
-	protected DefaultHttpClient _newClient() {
-		HttpParams params = new BasicHttpParams();
-
-		// Turn off stale checking.  Our connections break all the time anyway,
-		// and it's not worth it to pay the penalty of checking every time.
-		HttpConnectionParams.setStaleCheckingEnabled(params, false);
-
-		HttpConnectionParams.setConnectionTimeout(params, SOCKET_OPERATION_TIMEOUT);
-		HttpConnectionParams.setSoTimeout(params, SOCKET_OPERATION_TIMEOUT);
-		HttpConnectionParams.setSocketBufferSize(params, 8192);
-
-		// Don't handle redirects -- return them to the caller.  Our code
-		// often wants to re-POST after a redirect, which we must do ourselves.
-		HttpClientParams.setRedirecting(params, false);
-
-		// Set the specified user agent and register standard protocols.
-		HttpProtocolParams.setUserAgent(params, Const.USER_AGENT);
-
-		// create HTTP client has above params with basic authentication
-		DefaultHttpClient client = new DefaultHttpClient(params);
-		Credentials credentials = new UsernamePasswordCredentials(
-				Const.ATERM_BASIC_USERNAME,
-				Const.ATERM_BASIC_PASSWORD
-				);
-		AuthScope scope = new AuthScope(_getHostName(), Const.ATERM_PORT);
-		client.getCredentialsProvider().setCredentials(scope, credentials);
-		
-		return client;
-	}
-	
 	/**
 	 * Start wake up service implemented by {@link WakeUpService}
 	 * @return
@@ -444,7 +368,7 @@ public class AtermHelper {
 	
 	/**
 	 * A class for waking up Aterm with bluetooth.
-	 *
+	 * Service must be static class.
 	 */
 	public static class WakeUpService extends Service {
 		private BluetoothHelper _bt;
@@ -575,31 +499,157 @@ public class AtermHelper {
 		.toString();
 	}
 	
+	private enum Command {
+		UPDATE_INFO,
+		STANDBY,
+		REBOOT;
+	}
+
 	/**
 	 * Execute Aterm command.
 	 * @param cmd
 	 * Specify Aterm's command name. Usually it is a last path segment of full command URI.
 	 */
-	private void _command(String cmd) {
-		DefaultHttpClient httpClient = _newClient();
+	private void _command(final Command cmd) {
+		(new Thread(new Runnable() {
+			@Override
+			public void run() {
+				HttpClient client = new HttpClient(_getHostName());
+				try {
+					// update information
+					// need to create connection when execute other commands.
+					Map<String, String> hiddens = _updateInfoForAsync(client);
+					Intent broadcast = new Intent();
+					broadcast.setAction(ACTION_GET_INFO);
+					_context.sendBroadcast(broadcast);
+
+					// select command
+					String cmdStr = "";
+					switch (cmd) {
+					case STANDBY:
+						cmdStr = _makeCommand(_router.getStandbyCommand());
+						break;
+					case REBOOT:
+						cmdStr = _makeCommand(_router.getRebootCommand());
+						break;
+					}
+					// execute command
+					if (cmdStr.length() != 0) {
+						try {
+							HttpPost method = new HttpPost(cmdStr);
+							List<NameValuePair> params = new ArrayList<NameValuePair>();
+							for (String key: hiddens.keySet()) {
+								params.add(new BasicNameValuePair(key, hiddens.get(key)));
+							}
+							method.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+
+							// just access, router executes command.
+							client.execute(method);
+						} catch (IOException e) {
+							// reach here when command succeeded.
+						}
+					}
+				} finally {
+					client.getConnectionManager().shutdown();
+				}
+			}
+		})).start();
+	}
+
+	/**
+	 * update an Aterm information with HTTP. (executing on AsyncTask is recommended.)
+	 * if connecting to router is succeeded, a new object 'Info' is stored a router's information.
+	 * If any error occurred, information is replaced empty.
+	 * e.g. HTTP connection error, information parsing error and so on.
+	 */
+	private Map<String, String> _updateInfoForAsync(DefaultHttpClient client) {
+		Info info = null;
+		final Map<String, String> hiddenMap = new HashMap<String, String>();
+		// access to Aterm information page
 		try {
-			HttpGet request = new HttpGet(_makeCommand(cmd));
-			// just access, router executes command.
-			httpClient.execute(request);
+			HttpGet request = new HttpGet(_makeCommand(Const.ATERM_CMD_GET_INFO));
+			info = client.execute(request, new ResponseHandler<Info>(){
+				@Override
+				public Info handleResponse(HttpResponse response)
+						throws ClientProtocolException, IOException {
+					Info info = null;
+					switch (response.getStatusLine().getStatusCode()) {
+					case HttpStatus.SC_OK:
+						try { // get connection and parse document.
+							HttpEntity entity = response.getEntity();
+							// Jsoup.parse closes InputStream after parsing
+							Document doc = Jsoup.parse(entity.getContent(), "euc-jp", "http://aterm.me/index.cgi");
+							String product = MyFunc.normalize(doc.select(".product span").text());
+							MyLog.d(product);
+							_setRouter(product);
+							info = _router.parseDocument(doc);
+							// parse hidden values
+							Elements hiddens = doc.select("input[type=hidden]");
+							if (hiddens != null) {
+								for (Element e : hiddens) {
+									String name = MyFunc.normalize(e.attr("name"));
+									String value = MyFunc.normalize(e.attr("value"));
+									hiddenMap.put(name, value);
+								}
+							}
+						} catch (IOException e) {
+							MyLog.e(e.toString());
+						} finally {
+							// Jsoup.parse closes InputStream after parsing
+							// so calling close() is not need. (should not close by myself)
+//							if (entity != null)
+//								entity.getContent().close();
+						}
+					}
+					return info;
+				}
+			});
 		} catch (IOException e) {
 			MyLog.e(e.toString());
 		} finally {
-			httpClient.getConnectionManager().shutdown();
+			// update info object.
+			if (info != null) {
+				if (info.isValid()) {
+					if (info.charging) {
+						_isRouterDocked = true;
+					} else if (info.battery > _lastValidInfo.battery) {
+						_isRouterDocked = true;
+					} else if (_lastValidInfo.isOld()){
+						_isRouterDocked = (info.battery == _lastValidInfo.battery);
+					}
+					if (!info.getBtAddress().equals(_lastValidInfo.getBtAddress())) {
+						MyFunc.setStringPreference(R.string.pref_key_bt_address, info.getBtAddress());
+						MyFunc.setSetPreference(R.string.pref_key_aterm_ssid, info.getSsidSet());
+					}
+					_lastValidInfo = info;
+				}
+				_info = info;
+				MyLog.d("Aterm's information is updated.");
+			} else {
+				// keep _isRouterDocked's value.
+				_info = new Info();
+				MyLog.w("Information update is failed.");
+			}
 		}
+		return hiddenMap;
+	}
+	
+	/**
+	 * perform {@link #forceToUpdateInfo()} if need.
+	 */
+	public void updateInfo() {
+		if (_lastValidInfo.isOld())
+			forceToUpdateInfo();
 	}
 
+	/**
+	 * Start an update information thread implemented by {@link #updateInfoAsync()}.
+	 */
+	public void forceToUpdateInfo() { _command(Command.UPDATE_INFO); }
+	
 	/** execute standby command */
-	public void standby() {
-		_command(_router.getStandbyCommand());
-	}
+	public void standby() { _command(Command.STANDBY); }
 
 	/** execute reboot command */
-	public void reboot() {
-		_command(_router.getRebootCommand());
-	}
+	public void reboot() { _command(Command.REBOOT); }
 }

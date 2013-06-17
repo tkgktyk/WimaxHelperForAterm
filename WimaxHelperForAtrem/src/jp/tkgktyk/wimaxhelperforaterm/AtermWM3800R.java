@@ -12,8 +12,7 @@ import org.jsoup.select.Elements;
 /**
  * A Router class for Aterm WM3800R.
  */
-public class AtermWM3800R implements Router {
-	
+public class AtermWM3800R extends Router {
 	/**
 	 * To use String in switch statement during parse document. Document has a
 	 * information table that have two column, 'key' and 'value'. This enum
@@ -116,7 +115,9 @@ public class AtermWM3800R implements Router {
 					break;
 				case IP_ADDRESS:
 					// remove sub net mask.
-					info.ipAddress.add(v.substring(0, v.indexOf('/')));
+					int i = v.indexOf('/');
+					if (i != -1)
+						info.ipAddress.add(v.substring(0, i));
 					break;
 				default:
 					// do nothing
@@ -128,16 +129,6 @@ public class AtermWM3800R implements Router {
 		}
 
 		return info;
-	}
-
-	@Override
-	public String getStandbyCommand() {
-		return Const.ATERM_CMD_STANDBY_BT;
-	}
-
-	@Override
-	public String getRebootCommand() {
-		return Const.ATERM_CMD_REBOOT;
 	}
 
 	@Override

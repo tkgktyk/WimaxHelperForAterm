@@ -13,12 +13,12 @@
 	        android:dialogMessage="実行しますか？" />
         <jp.tkgktyk.wimaxhelperforaterm.YesNoPreference
 	        android:key="@string/pref_key_standby"
-	        android:title="スタンバイ（未実装）"
+	        android:title="スタンバイ"
 	        android:summary="ルーターをスタンバイ状態にします"
 	        android:dialogMessage="実行しますか？" />
         <jp.tkgktyk.wimaxhelperforaterm.YesNoPreference
 	        android:key="@string/pref_key_reboot"
-	        android:title="再起動（未実装）"
+	        android:title="再起動"
 	        android:summary="ルーターを再起動します"
 	        android:dialogMessage="実行しますか？" />
     </PreferenceCategory>
