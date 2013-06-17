@@ -120,8 +120,12 @@ public class MainActivity extends MyPreferenceActivity {
 	private void _onGetInfo() {
 		AtermHelper.Product product = _getAterm().getRouter().toProduct();
 		String summary = "タップして情報を更新してください";
-		if (product != AtermHelper.Product.UNSUPPORTED)
+		if (product != AtermHelper.Product.UNSUPPORTED) {
 			summary = product.toString();
+			if (_getAterm().getInfo().updateNotified) {
+				summary += "（アップデートあり）";
+			}
+		}
 		YesNoPreference yesno = (YesNoPreference)this.findPreference(R.string.pref_key_update_information);
 		yesno.setSummary(summary);
 	}

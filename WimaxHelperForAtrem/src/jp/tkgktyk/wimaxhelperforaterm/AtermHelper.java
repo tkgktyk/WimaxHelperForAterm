@@ -111,15 +111,10 @@ public class AtermHelper {
 		public boolean updateNotified = false;
 		public int battery = INVALID_BATTERY_VALUE;
 		public boolean charging = false;
-		public int rssi = -999;
-		public int cinr = -1;
 		private Set<String> _ssidSet = new HashSet<String>();
-		public boolean wanTogether = false;
 		public String btName = "";
 		private String _btAddress = "";
-		public String status = "";
 		public int antenna = -1;
-		public List<String> ipAddress = new ArrayList<String>();
 		
 		/**
 		 * Default parameters of member is set in define statement.

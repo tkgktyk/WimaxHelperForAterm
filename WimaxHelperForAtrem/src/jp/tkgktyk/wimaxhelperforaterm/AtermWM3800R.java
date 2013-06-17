@@ -22,15 +22,10 @@ public class AtermWM3800R extends Router {
 		FIRMWARE_VERSION("ファームウェアバージョン"),
 		FIRMWARE_UPDATE("ファームウェア更新通知"),
 		BATTERY("電池残量"),
-		RSSI("RSSI"),
-		CINR("CINR"),
 		SSID("ネットワーク名(SSID)"),
-		WAN_TOGETHER("WiFi WAN側連動"),
 		BLUETOOTH_NAME("Bluetooth名"),
 		BLUETOOTH_ADDRESS("MACアドレス(Bluetooth)"),
-		CONNECTION_STATUS("接続状態"),
 		ANTENNA_LEVEL("電波状態"),
-		IP_ADDRESS("IPアドレス／ネットマスク"),
 		UNKNOWN("");
 
 	    private final String _key;
@@ -77,7 +72,7 @@ public class AtermWM3800R extends Router {
 					info.version = v;
 					break;
 				case FIRMWARE_UPDATE:
-					// implement is still nothing
+					info.updateNotified = v.contains("新ファームウェアへ更新可能");
 					break;
 				case BATTERY:
 					info.charging = v.contains("充電中");
@@ -89,17 +84,8 @@ public class AtermWM3800R extends Router {
 						info.battery = Integer.parseInt(v.substring(start + 1, v.indexOf('％')));
 					}
 					break;
-				case RSSI:
-					info.rssi = Integer.parseInt(v.substring(0, v.indexOf(' ')));
-					break;
-				case CINR:
-					info.cinr = Integer.parseInt(v.substring(0, v.indexOf(' ')));
-					break;
 				case SSID:
 					info.addSsid(v);
-					break;
-				case WAN_TOGETHER:
-					info.wanTogether = v.equals("enable");
 					break;
 				case BLUETOOTH_NAME:
 					info.btName = v;
@@ -107,17 +93,8 @@ public class AtermWM3800R extends Router {
 				case BLUETOOTH_ADDRESS:
 					info.setBtAddress(v);
 					break;
-				case CONNECTION_STATUS:
-					info.status = v;
-					break;
 				case ANTENNA_LEVEL:
 					info.antenna = Integer.parseInt(v.substring(v.indexOf("：") + 1));
-					break;
-				case IP_ADDRESS:
-					// remove sub net mask.
-					int i = v.indexOf('/');
-					if (i != -1)
-						info.ipAddress.add(v.substring(0, i));
 					break;
 				default:
 					// do nothing
