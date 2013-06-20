@@ -47,18 +47,16 @@ public class BluetoothHelper {
 	 * Try to connect to bluetooth specified address.
 	 * @param address
 	 * Specify bluetooth MAC address.
-	 * @param timeout
-	 * When passes timeout[msec] from start of a trial to connect, force stop the trial.
 	 */
-	public void connect(String address, final long timeout) {
+	public void connect(String address) {
 		if (!BluetoothAdapter.checkBluetoothAddress(address)) {
 			MyLog.e("invalid bluetooth address: " + address);
 			return;
 		}
 		BluetoothDevice device = _adapter.getRemoteDevice(address);
+		BluetoothSocket socket = null;
 		try {
 			// create unpaired RFCOMM socket
-			BluetoothSocket socket = null;
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD_MR1) {
 				try {
 					Method m = device.getClass().getMethod("createInsecureRfcommSocket", new Class[] { int.class });
@@ -80,23 +78,17 @@ public class BluetoothHelper {
 				socket = device.createInsecureRfcommSocketToServiceRecord(Const.BLUETOOTH_UUID);
 			}
 			// normally bluetooth socket's timeout is 12 seconds.
-			// more quickly, uses close thread.
-			final BluetoothSocket finalSocket = socket;
-			Timer timer = new Timer(false);
-			timer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					try {
-						finalSocket.close();
-					} catch (IOException e) {
-						// do nothing
-					}
-				}
-			}, timeout);
+			// if need to close socket more quickly, uses thread for closing.
 			socket.connect();
 		} catch (IOException e) {
 			// always reaches here
 		} finally {
+			if (socket != null)
+				try {
+					socket.close();
+				} catch (IOException e) {
+					MyLog.e(e.toString());
+				}
 			MyLog.d("tryed wake up.");
 		}
 	}

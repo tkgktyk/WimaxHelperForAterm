@@ -266,6 +266,7 @@ public class AtermHelper {
 	private Info _info;
 	private boolean _isRouterDocked;
 	private Info _lastValidInfo;
+	private boolean _updateInfoLocked;
 	
 	public AtermHelper(Context context) {
 		KEY_BT_ADDRESS = context.getString(R.string.pref_key_bt_address);
@@ -274,6 +275,7 @@ public class AtermHelper {
 		_info.loadPreference();
 		_isRouterDocked = false;
 		_lastValidInfo = new Info();
+		_updateInfoLocked = false;
 		
 		_setRouter(MyFunc.getStringPreference(R.string.pref_key_aterm_product));
 		
@@ -340,6 +342,13 @@ public class AtermHelper {
 	public Info getInfo() { return _info; }
 
 	/**
+	 * Force stop the wake up service.
+	 */
+	public void stopWakeUpService() {
+		_context.stopService(new Intent(_context, WakeUpService.class));
+	}
+	
+	/**
 	 * Start wake up service implemented by {@link WakeUpService}
 	 * @return
 	 * if return false, bluetooth address is invalid. otherwise return true.
@@ -369,6 +378,7 @@ public class AtermHelper {
 		private BluetoothHelper _bt;
 		private String _address;
 		private boolean _needsEnableControl;
+		private boolean _wakeUpLocked;
 
 		@Override
 		public IBinder onBind(Intent intent) {
@@ -408,6 +418,8 @@ public class AtermHelper {
 			IntentFilter filter = new IntentFilter();
 			filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
 			this.registerReceiver(_receiver, filter);
+			
+			_wakeUpLocked = false;
 		}
 		
 		@Override
@@ -422,20 +434,27 @@ public class AtermHelper {
 		@Override
 		public int onStartCommand(Intent intent, int flags, int startId) {
 			_address = intent.getStringExtra(KEY_BT_ADDRESS);
-			
-			// if bluetooth is not enable, enable it and wait for BluetoothAdapter.STATE_ON.
-			if (!_bt.isEnabled()) {
-				_needsEnableControl = true;
-				(new Thread(new Runnable() {
-					@Override
-					public void run() { _bt.enable(); }
-				})).start();
-			} else {
-				_needsEnableControl = false;
-				_wakeUp();
+
+			synchronized (this) {
+				if (!_wakeUpLocked) {
+					// lock until wake up end (bluetooth connected)
+					_wakeUpLocked = true;
+					// if bluetooth is not enable,
+					// enable it and wait for BluetoothAdapter.STATE_ON.
+					if (!_bt.isEnabled()) {
+						_needsEnableControl = true;
+						(new Thread(new Runnable() {
+							@Override
+							public void run() { _bt.enable(); }
+						})).start();
+					} else {
+						_needsEnableControl = false;
+						_wakeUp();
+					}
+				}
 			}
 			
-			return Service.START_STICKY;
+			return Service.START_NOT_STICKY;
 		}
 		
 		/**
@@ -446,20 +465,18 @@ public class AtermHelper {
 				@Override
 				public void run() {
 					MyLog.i("wake up.");
-					
+
 					// wake up Aterm
-					_bt.connect(
-							_address,
-							MyFunc.getLongPreference(R.string.pref_key_bt_connect_timeout)
-							);
-					
+					_bt.connect(_address);
+
 					// after treatment
 					if (_needsEnableControl)
 						_bt.disable();
+					_wakeUpLocked = false;
 				}
 			})).start();
-			
-			this.stopSelf();
+			// don't stop oneself to lock to wake up.
+//			this.stopSelf();
 		}
 	}
 	
@@ -506,49 +523,55 @@ public class AtermHelper {
 	 * Specify Aterm's command name. Usually it is a last path segment of full command URI.
 	 */
 	private void _command(final Command cmd) {
-		(new Thread(new Runnable() {
-			@Override
-			public void run() {
-				HttpClient client = new HttpClient(_getHostName());
-				try {
-					// update information
-					// need to create connection when execute other commands.
-					Map<String, String> hiddens = _updateInfoForAsync(client);
-					Intent broadcast = new Intent();
-					broadcast.setAction(ACTION_GET_INFO);
-					_context.sendBroadcast(broadcast);
-
-					// select command
-					String cmdStr = "";
-					switch (cmd) {
-					case STANDBY:
-						cmdStr = _makeCommand(_router.getStandbyCommand());
-						break;
-					case REBOOT:
-						cmdStr = _makeCommand(_router.getRebootCommand());
-						break;
-					}
-					// execute command
-					if (cmdStr.length() != 0) {
+		synchronized (this) {
+			if (!_updateInfoLocked) {
+				_updateInfoLocked = true;
+				(new Thread(new Runnable() {
+					@Override
+					public void run() {
+						HttpClient client = new HttpClient(_getHostName());
 						try {
-							HttpPost method = new HttpPost(cmdStr);
-							List<NameValuePair> params = new ArrayList<NameValuePair>();
-							for (String key: hiddens.keySet()) {
-								params.add(new BasicNameValuePair(key, hiddens.get(key)));
-							}
-							method.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+							// update information
+							// need to create connection when execute other commands.
+							Map<String, String> hiddens = _updateInfoForAsync(client);
+							Intent broadcast = new Intent();
+							broadcast.setAction(ACTION_GET_INFO);
+							_context.sendBroadcast(broadcast);
 
-							// just access, router executes command.
-							client.execute(method);
-						} catch (IOException e) {
-							// reach here when command succeeded.
+							// select command
+							String cmdStr = "";
+							switch (cmd) {
+							case STANDBY:
+								cmdStr = _makeCommand(_router.getStandbyCommand());
+								break;
+							case REBOOT:
+								cmdStr = _makeCommand(_router.getRebootCommand());
+								break;
+							}
+							// execute command
+							if (cmdStr.length() != 0) {
+								try {
+									HttpPost method = new HttpPost(cmdStr);
+									List<NameValuePair> params = new ArrayList<NameValuePair>();
+									for (String key: hiddens.keySet()) {
+										params.add(new BasicNameValuePair(key, hiddens.get(key)));
+									}
+									method.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+
+									// just access, router executes command.
+									client.execute(method);
+								} catch (IOException e) {
+									// reach here when command succeeded.
+								}
+							}
+						} finally {
+							client.getConnectionManager().shutdown();
 						}
+						_updateInfoLocked = false;
 					}
-				} finally {
-					client.getConnectionManager().shutdown();
-				}
+				})).start();
 			}
-		})).start();
+		}
 	}
 
 	/**

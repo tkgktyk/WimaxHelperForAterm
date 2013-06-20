@@ -39,13 +39,6 @@
     	            android:key="@string/pref_key_wifi_scan_wait"
     	            android:summary="ルーターの電波をスキャンする時間"
     	            android:title="スキャン時間" />
-    	        <EditTextPreference
-    	            android:defaultValue="10000"
-    	            android:dialogTitle="タイムアウト[ミリ秒]"
-    	            android:inputType="number"
-    	            android:key="@string/pref_key_bt_connect_timeout"
-    	            android:summary="リモート起動のタイムアウト時間"
-    	            android:title="タイムアウト" />
     	    </PreferenceCategory>
     	</PreferenceScreen>
     	

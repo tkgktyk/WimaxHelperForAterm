@@ -94,6 +94,10 @@ public class MyApplication extends Application {
 			// change default value.
 			MyFunc.removePreference(R.string.pref_key_bt_connect_timeout); // 10000msec
 		}
+		if (new Version("1.3").isNewerThan(last)) {
+			// remove a preference
+			MyFunc.removePreference(R.string.pref_key_bt_connect_timeout); // never use
+		}
 	}
 	
 	public AtermHelper getAterm() {
@@ -104,6 +108,8 @@ public class MyApplication extends Application {
 	
 	@Override
 	public void onLowMemory() {
+		super.onLowMemory();
+		_aterm.stopWakeUpService();
 		_aterm = null;
 	}
 }
