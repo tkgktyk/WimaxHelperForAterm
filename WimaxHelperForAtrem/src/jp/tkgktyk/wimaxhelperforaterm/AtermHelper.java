@@ -140,7 +140,7 @@ public class AtermHelper {
 		 */
 		public boolean isOld() {
 			return !isValid() ||
-					(Calendar.getInstance().getTimeInMillis() - timeInMillis) >= (10*60*1000);
+					(MyFunc.elapsedTimeInMillis(timeInMillis) >= Const.UPDATE_INTERVAL_IN_MILLIS);
 		}
 
 		/**
@@ -657,13 +657,13 @@ public class AtermHelper {
 	 */
 	public void updateInfo() {
 		if (_lastValidInfo.isOld())
-			forceToUpdateInfo();
+			forceUpdateInfo();
 	}
 
 	/**
 	 * Start an update information thread implemented by {@link #updateInfoAsync()}.
 	 */
-	public void forceToUpdateInfo() { _command(Command.UPDATE_INFO); }
+	public void forceUpdateInfo() { _command(Command.UPDATE_INFO); }
 	
 	/** execute standby command */
 	public void standby() { _command(Command.STANDBY); }

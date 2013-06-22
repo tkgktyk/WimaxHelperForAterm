@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -119,5 +120,9 @@ public class MyFunc {
 	public static String getAppTitle() {
 		return _context.getString(R.string.app_name)
 				+ " " + getStringPreference(R.string.pref_key_version_name);
+	}
+	
+	public static long elapsedTimeInMillis(long startTimeInMillis) {
+		return Calendar.getInstance().getTimeInMillis() - startTimeInMillis;
 	}
 }

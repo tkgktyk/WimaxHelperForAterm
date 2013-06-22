@@ -1,5 +1,6 @@
 package jp.tkgktyk.wimaxhelperforaterm;
 
+import java.util.Calendar;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -51,16 +52,26 @@ public class MainService extends Service {
 			} else if (action.equals(Intent.ACTION_SCREEN_ON)) {
 				_wakeUp();
 			} else if (action.equals(Intent.ACTION_SCREEN_OFF)) {
-				// TODO: execute updateInfo() by Timer
-				if (_getAterm().isWifiConnected())
-					_getAterm().updateInfo();
+				// execute updateInfo() once in interval
+				long elapsed = MyFunc.elapsedTimeInMillis(_getAterm().getInfo().timeInMillis);
+				long delay = Const.UPDATE_INTERVAL_IN_MILLIS - elapsed;
+				if (delay < 0)
+					delay = 0;
+				Timer timer = new Timer(true);
+				timer.schedule(new TimerTask() {
+					@Override
+					public void run() {
+						if (_getAterm().isWifiConnected())
+							_getAterm().updateInfo();
+					}
+				}, delay + 1);
 			} else if (action.equals(WifiManager.NETWORK_STATE_CHANGED_ACTION)) {
 				// wifi event only
 				NetworkInfo info = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
 				switch (info.getState()) {
 				case CONNECTED:
 					MyLog.d("wifi is connected.");
-					_getAterm().forceToUpdateInfo();
+					_getAterm().forceUpdateInfo();
 					break;
 				case DISCONNECTED:
 					MyLog.d("wifi is disconnected.");
@@ -96,6 +107,7 @@ public class MainService extends Service {
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(AtermHelper.ACTION_GET_INFO);
 		filter.addAction(Intent.ACTION_SCREEN_ON);
+		filter.addAction(Intent.ACTION_SCREEN_OFF);
 		filter.addAction(WifiManager.NETWORK_STATE_CHANGED_ACTION);
 		filter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
 		this.registerReceiver(_receiver, filter);

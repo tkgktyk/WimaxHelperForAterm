@@ -68,7 +68,7 @@ public class MainActivity extends MyPreferenceActivity {
 			@Override
 			public void onYesClicked(Preference preference) {
 				MyFunc.showToast("情報更新コマンドを発行中");
-				_getAterm().forceToUpdateInfo();
+				_getAterm().forceUpdateInfo();
 			}
 		});
 		_setCommand(R.string.pref_key_wake_up, new OnYesClickedListner() {
