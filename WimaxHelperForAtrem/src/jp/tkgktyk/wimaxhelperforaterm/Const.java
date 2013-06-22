@@ -3,6 +3,8 @@ package jp.tkgktyk.wimaxhelperforaterm;
 import java.util.UUID;
 
 public class Const {
+	public static final String PACKAGE_NAME = "jp.tkgktyk.wimaxhelperforaterm";
+	
 	public static final String ATERM_BASIC_USERNAME = "smart-user";
 	public static final String ATERM_BASIC_PASSWORD = "smart-user";
 	public static final String ATERM_CMD_GET_INFO = "info_remote_main";

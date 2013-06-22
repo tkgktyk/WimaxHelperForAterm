@@ -56,7 +56,7 @@ import android.os.IBinder;
  */
 public class AtermHelper {
 
-    public static final String ACTION_GET_INFO = "ACTION_GET_INFO";
+    public static final String ACTION_GET_INFO = Const.PACKAGE_NAME + ".AtermHelper.ACTION_GET_INFO";
 	private static String KEY_BT_ADDRESS = "";
 	
 	/**
