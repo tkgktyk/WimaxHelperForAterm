@@ -329,6 +329,7 @@ public class AtermHelper {
 			_router = new AtermUnsupported();
 			break;
 		}
+		MyLog.d(_router.toProduct().toString());
 	}
 	
 	/**
@@ -598,7 +599,6 @@ public class AtermHelper {
 							// Jsoup.parse closes InputStream after parsing
 							Document doc = Jsoup.parse(entity.getContent(), "euc-jp", "http://aterm.me/index.cgi");
 							String product = MyFunc.normalize(doc.select(".product span").text());
-							MyLog.d(product);
 							_setRouter(product);
 							info = _router.parseDocument(doc);
 							// parse hidden values
