@@ -512,6 +512,9 @@ public class AtermHelper {
 		.toString();
 	}
 	
+	/**
+	 * An enum to select commands.
+	 */
 	private enum Command {
 		UPDATE_INFO,
 		STANDBY,
@@ -522,10 +525,17 @@ public class AtermHelper {
 	 * Execute Aterm command.
 	 * @param cmd
 	 * Specify Aterm's command name. Usually it is a last path segment of full command URI.
+	 * @return
+	 * returns false if cannot execute command. Reasons of 'cannot' are
+	 * WiFi is not connected or now other command is executing.
 	 */
-	private void _command(final Command cmd) {
+	private boolean _command(final Command cmd) {
+		if (!this.isWifiConnected())
+			return false;
 		synchronized (this) {
-			if (!_updateInfoLocked) {
+			if (_updateInfoLocked) {
+				return false;
+			} else {
 				_updateInfoLocked = true;
 				(new Thread(new Runnable() {
 					@Override
@@ -571,6 +581,7 @@ public class AtermHelper {
 						_updateInfoLocked = false;
 					}
 				})).start();
+				return true; // to execute command is success.
 			}
 		}
 	}
@@ -654,20 +665,37 @@ public class AtermHelper {
 	
 	/**
 	 * perform {@link #forceToUpdateInfo()} if need.
+	 * @return
+	 * returns false if cannot execute command. Reasons of 'cannot' are
+	 * WiFi is not connected or now other command is executing.
 	 */
-	public void updateInfo() {
+	public boolean updateInfo() {
 		if (_lastValidInfo.isOld())
-			forceUpdateInfo();
+			return forceUpdateInfo();
+		else
+			return false;
 	}
 
 	/**
 	 * Start an update information thread implemented by {@link #updateInfoAsync()}.
+	 * @return
+	 * returns false if cannot execute command. Reasons of 'cannot' are
+	 * WiFi is not connected or now other command is executing.
 	 */
-	public void forceUpdateInfo() { _command(Command.UPDATE_INFO); }
+	public boolean forceUpdateInfo() { return _command(Command.UPDATE_INFO); }
 	
-	/** execute standby command */
-	public void standby() { _command(Command.STANDBY); }
+	/**
+	 * execute standby command 
+	 * @return
+	 * returns false if cannot execute command. Reasons of 'cannot' are
+	 * WiFi is not connected or now other command is executing.
+	 */
+	public boolean standby() { return _command(Command.STANDBY); }
 
-	/** execute reboot command */
-	public void reboot() { _command(Command.REBOOT); }
+	/** execute reboot command
+	 * @return
+	 * returns false if cannot execute command. Reasons of 'cannot' are
+	 * WiFi is not connected or now other command is executing.
+	 */
+	public boolean reboot() { return _command(Command.REBOOT); }
 }

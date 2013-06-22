@@ -39,7 +39,17 @@ public class MyFunc {
 		showToast(_context.getString(R.string.s1_finished, _context.getString(id)));
 	}
 	public static void showFailedToast(int id) {
-		showToast(_context.getString(R.string.s1_failed, _context.getString(id)));
+		showLongToast(_context.getString(R.string.s1_failed, _context.getString(id)));
+	}
+	public static void showFailedToast(int phenomenon, int help) {
+		showLongToast(_context.getString(
+				R.string.s2_failed,
+				_context.getString(phenomenon),
+				_context.getString(help)
+				));
+	}
+	public static void showFailedToast(String phenomenon, String help) {
+		showLongToast(_context.getString(R.string.s2_failed, phenomenon, help));
 	}
 	public static void runtimeError(int id) {
 		runtimeError(_context.getString(id));

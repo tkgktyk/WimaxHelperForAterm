@@ -67,8 +67,10 @@ public class MainActivity extends MyPreferenceActivity {
 		_setCommand(R.string.pref_key_update_information, new OnYesClickedListner() {
 			@Override
 			public void onYesClicked(Preference preference) {
-				MyFunc.showToast("情報更新コマンドを発行中");
-				_getAterm().forceUpdateInfo();
+				if (_getAterm().forceUpdateInfo())
+					MyFunc.showToast("情報更新中");
+				else
+					MyFunc.showFailedToast("コマンド実行", "ルーターと未接続か他のコマンドを実行中です。");
 			}
 		});
 		_setCommand(R.string.pref_key_wake_up, new OnYesClickedListner() {
@@ -77,7 +79,7 @@ public class MainActivity extends MyPreferenceActivity {
 				if (_getAterm().wakeUp()) {
 					MyFunc.showToast("リモート起動中");
 				} else {
-					MyFunc.showToast("有効なルーター情報がありません。");
+					MyFunc.showFailedToast("リモート起動", "一度W.H.A.の画面を閉じて、ルーターと通信後にお試しください。");
 					MyLog.w("failed to wake up");
 				}
 			}
@@ -85,15 +87,19 @@ public class MainActivity extends MyPreferenceActivity {
 		_setCommand(R.string.pref_key_standby, new OnYesClickedListner() {
 			@Override
 			public void onYesClicked(Preference preference) {
-				MyFunc.showToast("スタンバイ・コマンドを発行中");
-				_getAterm().standby();
+				if (_getAterm().standby())
+					MyFunc.showToast("スタンバイ実行中");
+				else
+					MyFunc.showFailedToast("コマンド実行", "ルーターと未接続か他のコマンドを実行中です。");
 			}
 		});
 		_setCommand(R.string.pref_key_reboot, new OnYesClickedListner() {
 			@Override
 			public void onYesClicked(Preference preference) {
-				MyFunc.showToast("再起動コマンドを発行中");
-				_getAterm().reboot();
+				if (_getAterm().reboot())
+					MyFunc.showToast("再起動中");
+				else
+					MyFunc.showFailedToast("コマンド実行", "ルーターと未接続か他のコマンドを実行中です。");
 			}
 		});
 	}

@@ -6,6 +6,7 @@
     <string name="hello_world">Hello world!</string>
     <string name="s1_finished">%1$sが完了しました</string>
     <string name="s1_failed">%1$sに失敗しました</string>
+    <string name="s2_failed">%1$sに失敗しました\n%2$s</string>
 
     <!-- for MyAsync -->
     <string name="now_loading">読み込み中です</string>
