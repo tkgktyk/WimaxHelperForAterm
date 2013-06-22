@@ -17,5 +17,5 @@ public class Const {
 	public static final UUID BLUETOOTH_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 	
 	// minimum interval to update information
-	public static final long UPDATE_INTERVAL_IN_MILLIS = 1*60*1000; // 10 minutes
+	public static final long UPDATE_INTERVAL_IN_MILLIS = 10*60*1000; // 10 minutes
 }
