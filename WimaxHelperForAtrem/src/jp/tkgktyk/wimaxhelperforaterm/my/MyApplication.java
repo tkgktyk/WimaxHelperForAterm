@@ -23,54 +23,14 @@ public class MyApplication extends Application {
 	}
 	
 	private void _checkVersion() {
-		class Version {
-			public static final int BASE = 1000;
-
-			int major = 0;
-			int minor = 0;
-			int revision = 0;
-			
-			public Version(String version) {
-				if (version != null && version.length() != 0) {
-					String[] v = version.split("\\.");
-					int n = v.length;
-					if (n >= 1)
-						major = Integer.parseInt(v[0]);
-					if (n >= 2)
-						minor = Integer.parseInt(v[1]);
-					if (n >= 3)
-						revision = Integer.parseInt(v[2]);
-				}
-			}
-			
-			public int toInt() {
-				return major*BASE*BASE + minor*BASE + revision;
-			}
-			
-			public boolean isNewerThan(Version v) {
-				return toInt() > v.toInt();
-			}
-		}
-		
 		// get last running version
-		Version last = new Version(MyFunc.getStringPreference(R.string.pref_key_version_name));
-		// current package's version
-		PackageManager pm = this.getPackageManager();
-		String version = null;
-		try {
-			PackageInfo info = pm.getPackageInfo(getPackageName(), PackageManager.GET_ACTIVITIES);
-			version = info.versionName;
-		} catch (NameNotFoundException e) {
-			MyLog.e(e.toString());
-		}
-		if (version == null)
-			return;
+		MyVersion last = new MyVersion(MyFunc.getStringPreference(R.string.pref_key_version_name));
 		// save current version
-		MyFunc.setStringPreference(R.string.pref_key_version_name, version);
-		Version current = new Version(version);
+		MyVersion current = new MyVersion(this);
+		MyFunc.setStringPreference(R.string.pref_key_version_name, current.toString());
 		
 		// care of changing version
-		if (new Version("1.1.4").isNewerThan(last)) {
+		if (new MyVersion("1.1.4").isNewerThan(last)) {
 			// introduce preferences of router's SSID and versionName.
 			// SSID is saved only when Bluetooth MAC address is changed.
 			// so remove Bluetooth MAC address on preference to save SSID.
@@ -80,21 +40,21 @@ public class MyApplication extends Application {
 			// so reset screen_on_wait preference.
 //			MyFunc.removePreference(R.string.pref_key_screen_on_wait);
 		}
-		if (new Version("1.1.5").isNewerThan(last)) {
+		if (new MyVersion("1.1.5").isNewerThan(last)) {
 			// debugged GT-N7000 4.1.2.
 			// change default value.
 //			MyFunc.removePreference(R.string.pref_key_screen_on_wait);
 			MyFunc.removePreference(R.string.pref_key_bt_connect_timeout);
 		}
-		if (new Version("1.1.6").isNewerThan(last)) {
+		if (new MyVersion("1.1.6").isNewerThan(last)) {
 			// change default value.
 			MyFunc.removePreference(R.string.pref_key_bt_connect_timeout); // 5000msec
 		}
-		if (new Version("1.2").isNewerThan(last)) {
+		if (new MyVersion("1.2").isNewerThan(last)) {
 			// change default value.
 			MyFunc.removePreference(R.string.pref_key_bt_connect_timeout); // 10000msec
 		}
-		if (new Version("1.3").isNewerThan(last)) {
+		if (new MyVersion("1.3").isNewerThan(last)) {
 			// remove a preference
 			MyFunc.removePreference(R.string.pref_key_bt_connect_timeout); // never use
 		}
