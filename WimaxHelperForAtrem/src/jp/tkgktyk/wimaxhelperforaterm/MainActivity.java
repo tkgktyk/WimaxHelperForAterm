@@ -24,13 +24,6 @@ public class MainActivity extends MyPreferenceActivity {
 	 * Receives these actions.
 	 *	ACTION_GET_INFO
 	 *		When Aterm's information is updated, notify the new information.
-	 *	ACTION_SCREEN_ON
-	 *		If WiFi is not connecting, try waking up the router. otherwise try
-	 *		getting Aterm's new information.
-	 *	NETWORK_STATE_CHANGED_ACTION
-	 *		When network state is changed, change the notification.
-	 *	WIFI_STATE_CHANGED_ACTION
-	 *		When WiFi state is changed, change the notification.
 	 */
 	private final BroadcastReceiver _receiver = new BroadcastReceiver() {
 		@Override
