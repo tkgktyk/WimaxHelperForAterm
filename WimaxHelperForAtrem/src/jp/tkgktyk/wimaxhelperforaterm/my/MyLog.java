@@ -22,6 +22,9 @@ public class MyLog {
 	public static void e(String text) {
 		Log.e(_getMethodName(), text);
 	}
+	public static void e(Exception e) {
+		Log.e(_getMethodName(), e.toString());
+	}
 	public static void i(String text) {
 		Log.i(_getMethodName(), text);
 	}

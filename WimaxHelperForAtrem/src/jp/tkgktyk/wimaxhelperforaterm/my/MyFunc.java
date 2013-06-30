@@ -20,7 +20,7 @@ import android.widget.Toast;
 public class MyFunc {
 	private static Context _context;
 	
-	public static void setContext(Context context) { _context = context; }
+	public static void setContext(Context context) { _context = context.getApplicationContext(); }
 	
 	public static void showToast(int id) {
 		showToast(_context.getString(id));

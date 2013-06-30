@@ -18,7 +18,7 @@ public class MyApplication extends Application {
 	public void onCreate() {
 		super.onCreate();
 		
-		MyFunc.setContext(this.getApplicationContext());
+		MyFunc.setContext(this);
 		_checkVersion();
 	}
 	
