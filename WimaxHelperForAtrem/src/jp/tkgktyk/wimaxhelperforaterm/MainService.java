@@ -1,6 +1,5 @@
 package jp.tkgktyk.wimaxhelperforaterm;
 
-import java.util.Calendar;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;

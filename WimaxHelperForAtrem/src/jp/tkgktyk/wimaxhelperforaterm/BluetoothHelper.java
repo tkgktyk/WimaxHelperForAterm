@@ -3,8 +3,6 @@ package jp.tkgktyk.wimaxhelperforaterm;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import jp.tkgktyk.wimaxhelperforaterm.my.MyLog;
 import android.bluetooth.BluetoothAdapter;
