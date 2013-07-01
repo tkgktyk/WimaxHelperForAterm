@@ -475,7 +475,8 @@ public class AtermHelper {
 					// after treatment
 					if (_needsEnableControl)
 						_bt.disable();
-					_wakeUpLocked = false;
+//					_wakeUpLocked = false;
+					stopSelf();
 				}
 			})).start();
 			// don't stop oneself to lock to wake up.
