@@ -66,9 +66,6 @@ public class MyApplication extends Application {
 	@Override
 	public void onLowMemory() {
 		super.onLowMemory();
-		if (_aterm != null) {
-			_aterm.stopWakeUpService();
-			_aterm = null;
-		}
+		_aterm = null;
 	}
 }

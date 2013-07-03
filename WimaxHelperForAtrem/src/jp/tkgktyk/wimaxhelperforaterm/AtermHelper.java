@@ -336,20 +336,16 @@ public class AtermHelper {
 	public Info getInfo() { return _info; }
 
 	/**
-	 * Force stop the wake up service.
-	 */
-	public void stopWakeUpService() {
-		_context.stopService(new Intent(_context, WakeUpService.class));
-	}
-	
-	/**
 	 * Start wake up service implemented by {@link WakeUpService}
 	 */
 	public void wakeUp() {
 		String address = _info.getBtAddress();
-		Intent intent = new Intent(_context, WakeUpService.class);
-		intent.putExtra(WakeUpService.KEY_BT_ADDRESS, address);
-		_context.startService(intent);
+		Intent intent = new Intent();
+		intent.setClassName("jp.tkgktyk.wakeupatermbybluetooth",
+				"jp.tkgktyk.wakeupatermbybluetooth.MainActivity");
+		intent.putExtra(Intent.EXTRA_TEXT, address);
+		intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		_context.startActivity(intent);
 		
 		// reset _isRouterDocked and _lastValidInfo
 		_isRouterDocked = false;
