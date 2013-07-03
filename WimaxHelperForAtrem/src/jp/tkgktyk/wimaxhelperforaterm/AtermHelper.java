@@ -38,16 +38,11 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import android.app.Service;
-import android.bluetooth.BluetoothAdapter;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.IBinder;
 
 /**
  * A helper class to access to Aterm router.
@@ -278,7 +273,7 @@ public class AtermHelper {
 		_setRouter(MyFunc.getStringPreference(R.string.pref_key_aterm_product));
 		
 		// set default host name
-		if (_getHostName().length() == 0) {
+		if (getHostName().length() == 0) {
 			MyFunc.setStringPreference(
 					R.string.pref_key_aterm_host_name,
 					Const.ATERM_DEFAULT_HOST_NAME
@@ -291,7 +286,7 @@ public class AtermHelper {
 	 * @return
 	 * Router's host name.
 	 */
-	private String _getHostName() {
+	public String getHostName() {
 		return MyFunc.getStringPreference(R.string.pref_key_aterm_host_name);
 	}
 	
@@ -385,7 +380,7 @@ public class AtermHelper {
 	private String _makeCommand(String cmd) {
 		return new Uri.Builder()
 		.scheme("http")
-		.authority(_getHostName())
+		.authority(getHostName())
 		.path("index.cgi")
 		.appendPath(cmd)
 		.build()
@@ -420,7 +415,7 @@ public class AtermHelper {
 				(new Thread(new Runnable() {
 					@Override
 					public void run() {
-						HttpClient client = new HttpClient(_getHostName());
+						HttpClient client = new HttpClient(getHostName());
 						try {
 							// update information
 							// need to create connection when execute other commands.

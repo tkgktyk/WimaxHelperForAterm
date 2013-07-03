@@ -3,12 +3,12 @@ package jp.tkgktyk.wimaxhelperforaterm;
 import jp.tkgktyk.wimaxhelperforaterm.YesNoPreference.OnYesClickedListner;
 import jp.tkgktyk.wimaxhelperforaterm.my.MyApplication;
 import jp.tkgktyk.wimaxhelperforaterm.my.MyFunc;
-import jp.tkgktyk.wimaxhelperforaterm.my.MyLog;
 import jp.tkgktyk.wimaxhelperforaterm.my.MyPreferenceActivity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.net.Uri;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceScreen;
@@ -88,6 +88,17 @@ public class MainActivity extends MyPreferenceActivity {
 					MyFunc.showToast("再起動中");
 				else
 					MyFunc.showFailedToast("コマンド実行", "ルーターと未接続か他のコマンドを実行中です。");
+			}
+		});
+		_setCommand(R.string.pref_key_quick_web, new OnYesClickedListner() {
+			@Override
+			public void onYesClicked(Preference preference) {
+				Uri uri = new Uri.Builder()
+				.scheme("http")
+				.authority(_getAterm().getHostName())
+				.build();
+				Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+				startActivity(intent);
 			}
 		});
 	}

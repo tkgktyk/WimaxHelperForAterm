@@ -17,12 +17,12 @@
 	        android:summary="ルーターをスタンバイ状態にします"
 	        android:dialogMessage="実行しますか？" />
         <jp.tkgktyk.wimaxhelperforaterm.YesNoPreference
-	        android:key="@string/pref_key_reboot"
-	        android:title="再起動"
-	        android:summary="ルーターを再起動します"
-	        android:dialogMessage="実行しますか？" />
+	        android:key="@string/pref_key_quick_web"
+	        android:title="クイック設定Web"
+	        android:summary="ルーターの設定ページを開きます。"
+	        android:dialogMessage="開きますか？" />
     </PreferenceCategory>
-    <PreferenceCategory android:title="設定" >
+    <PreferenceCategory android:title="その他" >
         
     	<PreferenceScreen android:title="アプリの設定" >
     	    <PreferenceCategory android:title="全般" >
@@ -39,25 +39,30 @@
     	            android:key="@string/pref_key_wifi_scan_wait"
     	            android:summary="ルーターの電波をスキャンする時間"
     	            android:title="スキャン時間" />
-    	    </PreferenceCategory>
-    	</PreferenceScreen>
-    	
-    	<PreferenceScreen android:title="高度な設定" >
-    	    <PreferenceCategory android:title="リモート起動" >
     	        <EditTextPreference
     	            android:dialogTitle="Bluetoothアドレス"
     	            android:inputType="text"
     	            android:key="@string/pref_key_bt_address"
-    	            android:summary="ルーターのBluetoothのMACアドレス"
+    	            android:summary="ルーターのBluetooth MACアドレス"
     	            android:title="Bluetoothアドレス" />
     	    </PreferenceCategory>
-    	    <PreferenceCategory android:title="サービス" >
+    	</PreferenceScreen>
+    	
+    	<PreferenceScreen android:title="拡張コマンド" >
+    	    <PreferenceCategory android:title="ルーター" >
     	        <jp.tkgktyk.wimaxhelperforaterm.YesNoPreference
+                    android:dialogMessage="実行しますか？"
+                    android:key="@string/pref_key_reboot"
+                    android:summary="ルーターを再起動します"
+                    android:title="再起動" />
+            </PreferenceCategory>
+    	    <PreferenceCategory android:title="アプリ" >
+                <jp.tkgktyk.wimaxhelperforaterm.YesNoPreference
+                    android:dialogMessage="実行しますか？"
                     android:key="@string/pref_key_stop_service"
-                    android:title="サービス停止"
                     android:summary="W.H.A.のサービスを停止します"
-                    android:dialogMessage="実行しますか？" />
-    	    </PreferenceCategory>
+                    android:title="サービス停止" />
+            </PreferenceCategory>
     	</PreferenceScreen>
     	
     </PreferenceCategory>
