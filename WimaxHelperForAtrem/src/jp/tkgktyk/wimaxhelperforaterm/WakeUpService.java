@@ -59,8 +59,6 @@ public class WakeUpService extends Service {
 	public void onCreate() {
 		super.onCreate();
 		
-		MyLog.d("create wake up service.");
-		
 		_bt = new BluetoothHelper();
 		IntentFilter filter = new IntentFilter();
 		filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
@@ -75,8 +73,6 @@ public class WakeUpService extends Service {
 	public void onDestroy() {
 		super.onDestroy();
 		
-		MyLog.d("destroy wake up service.");
-		
 		this.unregisterReceiver(_receiver);
 	}
 
@@ -86,8 +82,8 @@ public class WakeUpService extends Service {
 		if (_address == null)
 			_address = "";
 		if (!BluetoothAdapter.checkBluetoothAddress(_address)) {
-			MyLog.w("invalid bluetooth address: " + _address);
-			MyFunc.showFailedToast("リモート起動", "Bluetoothのアドレスが不正です。\n" + _address);
+			MyFunc.showFailedToast("リモート起動",
+					"Bluetoothのアドレスが不正です。\n\"" + _address + "\"");
 		} else {
 			synchronized (this) {
 				if (!_wakeUpLocked) {
@@ -119,8 +115,7 @@ public class WakeUpService extends Service {
 		(new Thread(new Runnable() {
 			@Override
 			public void run() {
-				MyLog.i("wake up.");
-
+				MyLog.i("try wake up");
 				// wake up Aterm
 				_bt.connect(_address);
 

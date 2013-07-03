@@ -3,8 +3,6 @@ package jp.tkgktyk.wimaxhelperforaterm.my;
 import android.util.Log;
 
 public class MyLog {
-	private static final boolean D = true;
-
 	private static String _getMethodName() {
 		String method = Thread.currentThread().getStackTrace()[4].getClassName();
 		method += "#" + Thread.currentThread().getStackTrace()[4].getMethodName();
@@ -12,12 +10,10 @@ public class MyLog {
 		return method;
 	}
 	public static void d(String text) {
-		if (D)
-			Log.d(_getMethodName(), text);
+		Log.d(_getMethodName(), text);
 	}
 	public static void d() {
-		if (D)
-			Log.d("LogD", _getMethodName());
+		Log.d("LogD", _getMethodName());
 	}
 	public static void e(String text) {
 		Log.e(_getMethodName(), text);
