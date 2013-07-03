@@ -336,13 +336,6 @@ public class AtermHelper {
 	public Info getInfo() { return _info; }
 
 	/**
-	 * Force stop the wake up service.
-	 */
-	public void stopWakeUpService() {
-		_context.stopService(new Intent(_context, WakeUpService.class));
-	}
-	
-	/**
 	 * Start wake up service implemented by {@link WakeUpService}
 	 */
 	public void wakeUp() {
