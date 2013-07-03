@@ -57,7 +57,6 @@ import android.os.IBinder;
 public class AtermHelper {
 
     public static final String ACTION_GET_INFO = Const.PACKAGE_NAME + ".AtermHelper.ACTION_GET_INFO";
-	private static String KEY_BT_ADDRESS = "";
 	
 	/**
 	 * A HTTP client class for accessing to AtermRouter.
@@ -269,7 +268,6 @@ public class AtermHelper {
 	private boolean _updateInfoLocked;
 	
 	public AtermHelper(Context context) {
-		KEY_BT_ADDRESS = context.getString(R.string.pref_key_bt_address);
 		_context = context;
 		_info = new Info();
 		_info.loadPreference();
@@ -351,137 +349,16 @@ public class AtermHelper {
 	
 	/**
 	 * Start wake up service implemented by {@link WakeUpService}
-	 * @return
-	 * if return false, bluetooth address is invalid. otherwise return true.
 	 */
-	public boolean wakeUp() {
+	public void wakeUp() {
 		String address = _info.getBtAddress();
-		if (!BluetoothAdapter.checkBluetoothAddress(address)) {
-			MyLog.w("invalid bluetooth address: " + address);
-			return false;
-		}
 		Intent intent = new Intent(_context, WakeUpService.class);
-		intent.putExtra(KEY_BT_ADDRESS, address);
+		intent.putExtra(WakeUpService.KEY_BT_ADDRESS, address);
 		_context.startService(intent);
 		
 		// reset _isRouterDocked and _lastValidInfo
 		_isRouterDocked = false;
 		_lastValidInfo.battery = Info.INVALID_BATTERY_VALUE;
-		
-		return true;
-	}
-	
-	/**
-	 * A class for waking up Aterm with bluetooth.
-	 * Service must be static class.
-	 */
-	public static class WakeUpService extends Service {
-		private BluetoothHelper _bt;
-		private String _address;
-		private boolean _needsEnableControl;
-		private boolean _wakeUpLocked;
-
-		@Override
-		public IBinder onBind(Intent intent) {
-			// TODO 自動生成されたメソッド・スタブ
-			return null;
-		}
-		
-		/**
-		 * A broadcast receiver to catch bluetooth enable event for trigger starting wake up sequence.
-		 */
-		private final BroadcastReceiver _receiver = new BroadcastReceiver() {
-			@Override
-			public void onReceive(Context context, Intent intent) {
-				final String action = intent.getAction();
-				
-				if (_wakeUpLocked == false)
-					return;
-				if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
-					final int state
-					= intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
-					switch (state) {
-					case BluetoothAdapter.STATE_OFF:
-						break;
-					case BluetoothAdapter.STATE_ON:
-						_wakeUp();
-						break;
-					}
-				}
-			}
-		};
-		
-		@Override
-		public void onCreate() {
-			super.onCreate();
-			
-			MyLog.d("create wake up service.");
-			
-			_bt = new BluetoothHelper();
-			IntentFilter filter = new IntentFilter();
-			filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
-			this.registerReceiver(_receiver, filter);
-			
-			_wakeUpLocked = false;
-		}
-		
-		@Override
-		public void onDestroy() {
-			super.onDestroy();
-			
-			MyLog.d("destroy wake up service.");
-			
-			this.unregisterReceiver(_receiver);
-		}
-	
-		@Override
-		public int onStartCommand(Intent intent, int flags, int startId) {
-			_address = intent.getStringExtra(KEY_BT_ADDRESS);
-
-			synchronized (this) {
-				if (!_wakeUpLocked) {
-					// lock until wake up end (bluetooth connected)
-					_wakeUpLocked = true;
-					// if bluetooth is not enable,
-					// enable it and wait for BluetoothAdapter.STATE_ON.
-					if (!_bt.isEnabled()) {
-						_needsEnableControl = true;
-						(new Thread(new Runnable() {
-							@Override
-							public void run() { _bt.enable(); }
-						})).start();
-					} else {
-						_needsEnableControl = false;
-						_wakeUp();
-					}
-				}
-			}
-			
-			return Service.START_NOT_STICKY;
-		}
-		
-		/**
-		 * Start wake up thread and stop service.
-		 */
-		private void _wakeUp() {
-			(new Thread(new Runnable() {
-				@Override
-				public void run() {
-					MyLog.i("wake up.");
-
-					// wake up Aterm
-					_bt.connect(_address);
-
-					// after treatment
-					if (_needsEnableControl)
-						_bt.disable();
-//					_wakeUpLocked = false;
-					stopSelf();
-				}
-			})).start();
-			// don't stop oneself to lock to wake up.
-//			this.stopSelf();
-		}
 	}
 	
 	/**

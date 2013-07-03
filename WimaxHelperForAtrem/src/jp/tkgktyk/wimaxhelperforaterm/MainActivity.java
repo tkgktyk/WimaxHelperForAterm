@@ -69,12 +69,7 @@ public class MainActivity extends MyPreferenceActivity {
 		_setCommand(R.string.pref_key_wake_up, new OnYesClickedListner() {
 			@Override
 			public void onYesClicked(Preference preference) {
-				if (_getAterm().wakeUp()) {
-					MyFunc.showToast("リモート起動中");
-				} else {
-					MyFunc.showFailedToast("リモート起動", "一度W.H.A.の画面を閉じて、ルーターと通信後にお試しください。");
-					MyLog.w("failed to wake up");
-				}
+				_getAterm().wakeUp();
 			}
 		});
 		_setCommand(R.string.pref_key_standby, new OnYesClickedListner() {

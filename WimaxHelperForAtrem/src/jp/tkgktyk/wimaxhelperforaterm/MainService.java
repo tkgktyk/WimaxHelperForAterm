@@ -27,7 +27,7 @@ import android.os.IBinder;
  */
 public class MainService extends Service {
 	
-	private static final int NOTIFICATION_ID = R.xml.main_preference;
+	private static final int NOTIFICATION_ID = R.drawable.ic_stat_connected;
 
 	/**
 	 * Receives these actions.
@@ -155,7 +155,6 @@ public class MainService extends Service {
 				content,
 				System.currentTimeMillis()
 				);
-//		notification.number = (antenna > 0)? antenna: 0;
 		Intent intent = new Intent(this, MainActivity.class);
 		PendingIntent contentIntent
 		= PendingIntent.getActivity(this, 0, intent, 0);
@@ -184,12 +183,7 @@ public class MainService extends Service {
 	private void _showPrepareNotification() {
 		_showNotification("WiMAX準備中", 0);
 	}
-	
-	/** Notify that now waking up.　*/
-	private void _showWakeUpNotification() {
-		_showNotification("リモート起動中", 0);
-	}
-	
+
 	/** Notify that unsupported. */
 	private void _showUnsupportedNotification() {
 		_showNotification("未対応の接続情報です", -1);
@@ -206,7 +200,6 @@ public class MainService extends Service {
 		if (aterm.isWifiConnected()) {
 			aterm.updateInfo();
 		} else if (!aterm.isRouterDocked()) {
-			_showWakeUpNotification();
 			_getAterm().wakeUp();
 		} else {
 			long delay = MyFunc.getLongPreference(R.string.pref_key_wifi_scan_wait);
@@ -228,7 +221,6 @@ public class MainService extends Service {
 							}
 						}
 						MyLog.d("router is not found.");
-						_showWakeUpNotification();
 						_getAterm().wakeUp();
 					}
 				}, delay);

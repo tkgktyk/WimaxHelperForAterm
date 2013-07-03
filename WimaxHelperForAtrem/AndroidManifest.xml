@@ -30,7 +30,7 @@
             </intent-filter>
         </activity>
         <service android:name="MainService" />
-        <service android:name="AtermHelper$WakeUpService" />
+        <service android:name="WakeUpService" />
         <receiver android:name="BootReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED"/>
