@@ -93,10 +93,7 @@ public class MainActivity extends MyPreferenceActivity {
 		_setCommand(R.string.pref_key_quick_web, new OnYesClickedListner() {
 			@Override
 			public void onYesClicked(Preference preference) {
-				Uri uri = new Uri.Builder()
-				.scheme("http")
-				.authority(_getAterm().getHostName())
-				.build();
+				Uri uri = Uri.fromParts("http", _getAterm().getHostName(), null);
 				Intent intent = new Intent(Intent.ACTION_VIEW, uri);
 				startActivity(intent);
 			}
