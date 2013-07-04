@@ -4,6 +4,7 @@ import jp.tkgktyk.wimaxhelperforaterm.YesNoPreference.OnYesClickedListner;
 import jp.tkgktyk.wimaxhelperforaterm.my.MyApplication;
 import jp.tkgktyk.wimaxhelperforaterm.my.MyFunc;
 import jp.tkgktyk.wimaxhelperforaterm.my.MyPreferenceActivity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -13,6 +14,7 @@ import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceScreen;
 import android.view.Menu;
+import android.view.MenuItem;
 
 /**
  * An activity executed launch application.
@@ -133,14 +135,7 @@ public class MainActivity extends MyPreferenceActivity {
 	}
 	
 	private AtermHelper _getAterm() { return ((MyApplication)this.getApplication()).getAterm(); }
-
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-//		getMenuInflater().inflate(R.menu.main, menu);
-		return true;
-	}
-
+	
 	/**
 	 * A workaround in https://code.google.com/p/android/issues/detail?id=4611.
 	 * When use nested preferenceScreen, the child preferenceScreen is not applied application theme.
@@ -153,6 +148,15 @@ public class MainActivity extends MyPreferenceActivity {
 			if (preference instanceof PreferenceScreen)
 				if (((PreferenceScreen)preference).getDialog()!=null)
 					((PreferenceScreen)preference).getDialog().getWindow().getDecorView().setBackgroundDrawable(this.getWindow().getDecorView().getBackground().getConstantState().newDrawable());
+		return false;
+	}
+	
+
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		// Inflate the menu; this adds items to the action bar if it is present.
+//		getMenuInflater().inflate(R.menu.main, menu);
+//		return true;
 		return false;
 	}
 }
