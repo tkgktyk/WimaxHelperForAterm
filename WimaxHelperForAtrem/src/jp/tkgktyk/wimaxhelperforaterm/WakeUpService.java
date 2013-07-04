@@ -122,8 +122,9 @@ public class WakeUpService extends Service {
 				// after treatment
 				if (_needsEnableControl)
 					_bt.disable();
+				else
+					stopSelf();
 //				_wakeUpLocked = false;
-				stopSelf();
 			}
 		})).start();
 		// don't stop oneself to lock to wake up.
