@@ -25,13 +25,7 @@
     <PreferenceCategory android:title="その他" >
         
     	<PreferenceScreen android:title="アプリの設定" >
-    	    <PreferenceCategory android:title="全般" >
-    	        <EditTextPreference
-    	            android:dialogTitle="Atermホスト名"
-    	            android:inputType="text"
-    	            android:key="@string/pref_key_aterm_host_name"
-    	            android:summary="クイック設定Webのアドレス"
-    	            android:title="Atermホスト名" />
+    	    <PreferenceCategory android:title="動作" >
     	        <EditTextPreference
     	            android:defaultValue="10000"
     	            android:dialogTitle="スキャン時間[ミリ秒]"
@@ -39,11 +33,25 @@
     	            android:key="@string/pref_key_wifi_scan_wait"
     	            android:summary="ルーターの電波をスキャンする時間"
     	            android:title="スキャン時間" />
+    	        <CheckBoxPreference
+    	            android:defaultValue="true"
+    	            android:key="@string/pref_key_bt_off_ctrl"
+    	            android:summaryOn="BluetoothをON/OFFします"
+    	            android:summaryOff="BluetoothをOFFしません"
+    	            android:title="Bluetoothの完全な制御" />
+    	    </PreferenceCategory>
+    	    <PreferenceCategory android:title="ルーター" >
+    	        <EditTextPreference
+    	            android:dialogTitle="Atermホスト名"
+    	            android:inputType="text"
+    	            android:key="@string/pref_key_aterm_host_name"
+    	            android:summary="クイック設定Webのアドレス"
+    	            android:title="Atermホスト名" />
     	        <EditTextPreference
     	            android:dialogTitle="Bluetoothアドレス"
     	            android:inputType="text"
     	            android:key="@string/pref_key_bt_address"
-    	            android:summary="ルーターのBluetooth MACアドレス"
+    	            android:summary="BluetoothのMACアドレス"
     	            android:title="Bluetoothアドレス" />
     	    </PreferenceCategory>
     	</PreferenceScreen>

@@ -41,16 +41,16 @@ public class BluetoothHelper {
 		}
 	}
 	
+	public boolean checkAddress(String address) {
+		return BluetoothAdapter.checkBluetoothAddress(address);
+	}
+	
 	/**
 	 * Try to connect to bluetooth specified address.
 	 * @param address
 	 * Specify bluetooth MAC address.
 	 */
 	public void connect(String address) {
-		if (!BluetoothAdapter.checkBluetoothAddress(address)) {
-			MyLog.e("invalid bluetooth address: " + address);
-			return;
-		}
 		BluetoothDevice device = _adapter.getRemoteDevice(address);
 		BluetoothSocket socket = null;
 		try {

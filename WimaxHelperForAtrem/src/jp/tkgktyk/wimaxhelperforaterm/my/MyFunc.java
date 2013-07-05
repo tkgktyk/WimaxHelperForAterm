@@ -84,6 +84,16 @@ public class MyFunc {
 		.putString(_context.getString(keyId), String.valueOf(value))
 		.apply();
 	}
+	public static boolean getBooleanPreference(int keyId) {
+		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(_context);
+		return pref.getBoolean(_context.getString(keyId), false);
+	}
+	public static void setBooleanPreference(int keyId, boolean value) {
+		SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(_context);
+		pref.edit()
+		.putBoolean(_context.getString(keyId), value)
+		.apply();
+	}
 	public static <T> Set<T> getSetPreference(int keyId) {
 		String filename = _context.getString(keyId);
 		Set<T> result = null;

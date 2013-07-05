@@ -81,9 +81,10 @@ public class WakeUpService extends Service {
 		_address = intent.getStringExtra(KEY_BT_ADDRESS);
 		if (_address == null)
 			_address = "";
-		if (!BluetoothAdapter.checkBluetoothAddress(_address)) {
+		if (!_bt.checkAddress(_address)) {
 			MyFunc.showFailedToast("リモート起動",
 					"Bluetoothのアドレスが不正です。\n\"" + _address + "\"");
+			stopSelf();
 		} else {
 			synchronized (this) {
 				if (!_wakeUpLocked) {
@@ -120,7 +121,8 @@ public class WakeUpService extends Service {
 				_bt.connect(_address);
 
 				// after treatment
-				if (_needsEnableControl)
+				if (_needsEnableControl &&
+						MyFunc.getBooleanPreference(R.string.pref_key_bt_off_ctrl))
 					_bt.disable();
 				else
 					stopSelf();
