@@ -196,34 +196,7 @@ public class AtermHelper {
 		 */
 		public abstract Product toProduct();
 	}
-	
-	/**
-	 * An extra class of Router.
-	 * This represents that this application is unsupported the router.
-	 */
-	protected class AtermUnsupported extends Router {
-		@Override
-		public Info parseDocument(Document doc) {
-			// return empty info
-			return new Info();
-		}
 
-		@Override
-		public String getStandbyCommand() {
-			// return empty
-			return "";
-		}
-		
-		@Override
-		public String getRebootCommand() {
-			// return empty
-			return "";
-		}
-
-		@Override
-		public Product toProduct() { return Product.UNSUPPORTED; }
-	}
-	
 	/**
 	 * To use String in switch statement.
 	 */
@@ -304,14 +277,10 @@ public class AtermHelper {
 	 */
 	private void _setRouter(String product) {
 		Product p = Product.toProduct(product);
-		if (_router != null && _router.toProduct() == p) {
-			// already set same router.
+		if (_router != null && _router.toProduct() == p) // already set same router.
 			return;
-		}
-		if (p != Product.UNSUPPORTED) {
-			// save product to DefaultSharedPreferences
+		if (p != Product.UNSUPPORTED) // save product to DefaultSharedPreferences
 			MyFunc.setStringPreference(R.string.pref_key_aterm_product, product);
-		}
 		// select Router
 		switch (p) {
 		case WM3800R:

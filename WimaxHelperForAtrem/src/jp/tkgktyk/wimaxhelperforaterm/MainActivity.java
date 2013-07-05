@@ -72,6 +72,7 @@ public class MainActivity extends MyPreferenceActivity {
 			@Override
 			public void onYesClicked(Preference preference) {
 				_getAterm().wakeUp();
+				MyFunc.showToast("リモート起動サービス起動");
 			}
 		});
 		_setCommand(R.string.pref_key_standby, new OnYesClickedListner() {
