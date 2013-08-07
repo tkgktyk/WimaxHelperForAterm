@@ -200,7 +200,7 @@ public class MainService extends Service {
 		if (aterm.isWifiConnected()) {
 			aterm.updateInfo();
 		} else if (!aterm.isRouterDocked()) {
-			_getAterm().wakeUp();
+			aterm.wakeUp();
 		} else {
 			long delay = MyFunc.getLongPreference(R.string.pref_key_wifi_scan_wait);
 			Timer timer = new Timer(true);

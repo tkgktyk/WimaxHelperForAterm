@@ -43,6 +43,7 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.text.TextUtils;
 
 /**
  * A helper class to access to Aterm router.
@@ -125,7 +126,11 @@ public class AtermHelper {
 			_btAddress = MyFunc.getStringPreference(R.string.pref_key_bt_address);
 		}
 		
-		public boolean isValid() { return (battery != INVALID_BATTERY_VALUE); }
+		public boolean isValid() {
+			return (battery != INVALID_BATTERY_VALUE) ||
+					!TextUtils.isEmpty(_btAddress) ||
+					!_ssidSet.isEmpty();
+			}
 		
 		/**
 		 * check whether this is fresh.
@@ -238,9 +243,9 @@ public class AtermHelper {
 	public AtermHelper(Context context) {
 		_context = context;
 		_info = new Info();
-		_info.loadPreference();
 		_isRouterDocked = false;
 		_lastValidInfo = new Info();
+		_lastValidInfo.loadPreference();
 		_updateInfoLocked = false;
 		
 		_setRouter(MyFunc.getStringPreference(R.string.pref_key_aterm_product));
@@ -308,7 +313,7 @@ public class AtermHelper {
 	 * Start wake up service implemented by {@link WakeUpService}
 	 */
 	public void wakeUp() {
-		String address = _info.getBtAddress();
+		String address = _lastValidInfo.getBtAddress();
 		Intent intent = new Intent(_context, WakeUpService.class);
 		intent.putExtra(WakeUpService.KEY_BT_ADDRESS, address);
 		_context.startService(intent);
@@ -397,7 +402,7 @@ public class AtermHelper {
 								break;
 							}
 							// execute command
-							if (cmdStr.length() != 0) {
+							if (!TextUtils.isEmpty(cmdStr)) {
 								try {
 									HttpPost method = new HttpPost(cmdStr);
 									List<NameValuePair> params = new ArrayList<NameValuePair>();

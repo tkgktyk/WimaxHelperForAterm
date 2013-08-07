@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.text.TextUtils;
 
 public class MyVersion {
 	public static final int BASE = 1000;
@@ -30,16 +31,17 @@ public class MyVersion {
 	}
 	
 	public void set(String version) {
-		if (version != null && version.length() != 0) {
-			String[] v = version.split("\\.");
-			int n = v.length;
-			if (n >= 1)
-				major = Integer.parseInt(v[0]);
-			if (n >= 2)
-				minor = Integer.parseInt(v[1]);
-			if (n >= 3)
-				revision = Integer.parseInt(v[2]);
-		}
+		if (TextUtils.isEmpty(version))
+			return;
+
+		String[] v = version.split("\\.");
+		int n = v.length;
+		if (n >= 1)
+			major = Integer.parseInt(v[0]);
+		if (n >= 2)
+			minor = Integer.parseInt(v[1]);
+		if (n >= 3)
+			revision = Integer.parseInt(v[2]);
 	}
 	
 	public int toInt() {
