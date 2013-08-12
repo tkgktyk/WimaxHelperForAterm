@@ -9,5 +9,7 @@ import jp.tkgktyk.wimaxhelperforaterm.AtermHelper.Product;
  */
 public class AtermUnsupported extends AtermWM3800R {
 	@Override
+	public String getStandbyCommand() { return Const.ATERM_CMD_STANDBY; }
+	@Override
 	public Product toProduct() { return Product.UNSUPPORTED; }
 }
